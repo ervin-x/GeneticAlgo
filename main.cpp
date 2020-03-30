@@ -63,6 +63,5 @@ int main()
         seconds = (double)(end2 - start2) / CLOCKS_PER_SEC; //вычисление времени работы алгоритма
         WriteCSV();                                         //запись результатов работы алгоритма в файл
     };
-    printf('done');
     return 0;
 }
