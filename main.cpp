@@ -1,3 +1,6 @@
+﻿#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
 #include <iostream>
 #include <string>
 #include <vector>
@@ -10,19 +13,19 @@
 using namespace std;
 
 
-void ReadCSV(){
-    //from csv
+void ReadCSV() {
     // TODO MAX
 }
 
 
-void WriteCSV(){
+void WriteCSV()
+{
     //to csv
     // TODO MAX
 }
 
-
-vector<int> TaskGeneration(int dim, int D) {
+vector<int> TaskGeneration(int dimension, int Density)
+{
     // возвращает веса элементов vector<int> (dim + int TargetWeight)
     // TODO MAX
 }
@@ -65,8 +68,6 @@ vector<bool> Mutation(vector<bool> Generation) {
 
 
 void GeneticAlgo(vector<int> Task) {
-    
-    unsigned int start_time =  clock();
 
     //генерация начальной популяцции
     vector<vector<bool>> InitPop = PoulationGeneration(PopSize, ChromoDim);
@@ -77,20 +78,25 @@ void GeneticAlgo(vector<int> Task) {
             //
         }
     }
-    
-    unsigned int end_time = clock();
-    unsigned int work_time = end_time - start_time;
-    
 }
 
 
-void DynamicAlgo(vector<int> Task) {
-    /*
-    TODO AZA
-    */
-}
+int main()
+{
+    ReadCSV();                                              //считываем исходные данные из файла
+    for (int k = 1; k <= 100; k++) {                          //цикл для генерации задач
+        vector<int> Task = TaskGeneration(dim, D);          //Task - текущая задача
+        clock_t start1 = clock();                           //начало отсчета времени работы алгоритма
+        GeneticAlgo(Task);                                  //выполнение задачи методом генетического алгоритма
+        clock_t end1 = clock();                             //конец отсчета времени работы алгоритма
+        seconds = (double)(end1 - start1) / CLOCKS_PER_SEC; //вычисление времени работы алгоритма
+        WriteCSV();                                         //запись результатов работы алгоритма в файл
+        clock_t start2 = clock();                           //начало отсчета времени работы алгоритма
+        DynamicAlgo(Task);                                  //выполнение задачи методом динамического программирования
+        clock_t end2 = clock();                             //конец отсчета времени работы алгоритма
+        seconds = (double)(end2 - start2) / CLOCKS_PER_SEC; //вычисление времени работы алгоритма
+        WriteCSV();                                         //запись результатов работы алгоритма в файл
+    };
+    return 0;
 
-
-int main() {
-    // TODO EGOR
 }
