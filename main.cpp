@@ -1,67 +1,68 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
 #include <iostream>
 #include <string>
 #include <vector>
 
 using namespace std;
 
-void ReadCSV(){
+int dim, D, PopSize;    // глобальные переменные: dim - количество элементов, D - плотность рюкзака, PopSize - размер популяции
+double seconds;         // seconds - время работы алгоритма
+
+void ReadCSV()
+{
     //from csv
     // TODO MAX
 }
 
 
-void WriteCSV(){
+void WriteCSV()
+{
     //to csv
     // TODO MAX
 }
 
-
-vector<int> TaskGeneration(int dim, int D) {
-    // РІРѕР·РІСЂР°С‰Р°РµС‚ РІРµСЃР° СЌР»РµРјРµРЅС‚РѕРІ vector<int> (dim + int TargetWeight)
+vector<int> TaskGeneration(int dimension, int Density)
+{
+    // возвращает веса элементов vector<int> (dim + int TargetWeight)
     // TODO MAX
 }
 
-vector<vector<bool>> PoulationGeneration(int PopSize, int dim) {
-    // TODO VANES
-}
-
-
-int FitnessFunction(vector<bool> X) {
-    // TODO AKELLA
-}
-
-
-vector<vector<bool>> Selection(vector<vector<bool>> Generation) {
-    // TODO DIMA
-}
-
-
-vector<bool> Crossingover(vector<vector<bool>> Generation) {
-    // TODO DIMA
-}
-
-
-vector<bool> Mutation(vector<bool> Generation) {
-    // TODO AKELLA
-}
-
-
-void GeneticAlgo(vector<int> Task) {
+void GeneticAlgo(vector<int> Task)
+{
     /*
-    РіРµРЅРµСЂР°С†РёСЏ РЅР°С‡Р°Р»СЊРЅРѕР№ РїРѕРїСѓР»СЏС†С†РёРё
-    С†РёРєР» РїРѕ i
+    генерация начальной популяцции
+    цикл по i
     TODO VANES
     */
 }
 
 
-void DynamicAlgo(vector<int> Task) {
+void DynamicAlgo(vector<int> Task)
+{
     /*
     TODO AZA
     */
 }
 
-
-int main() {
-    // TODO EGOR
+int main()
+{
+    ReadCSV();                                              //считываем исходные данные из файла
+    for (int k = 1; k <= 100; k++)                          //цикл для генерации задач
+    {
+        vector<int> Task = TaskGeneration(dim, D);          //Task - текущая задача
+        clock_t start1 = clock();                           //начало отсчета времени работы алгоритма
+        GeneticAlgo(Task);                                  //выполнение задачи методом генетического алгоритма
+        clock_t end1 = clock();                             //конец отсчета времени работы алгоритма
+        seconds = (double)(end1 - start1) / CLOCKS_PER_SEC; //вычисление времени работы алгоритма
+        WriteCSV();                                         //запись результатов работы алгоритма в файл
+        clock_t start2 = clock();                           //начало отсчета времени работы алгоритма
+        DynamicAlgo(Task);                                  //выполнение задачи методом динамического программирования
+        clock_t end2 = clock();                             //конец отсчета времени работы алгоритма
+        seconds = (double)(end2 - start2) / CLOCKS_PER_SEC; //вычисление времени работы алгоритма
+        WriteCSV();                                         //запись результатов работы алгоритма в файл
+    };
+    printf('done');
+    return 0;
 }
