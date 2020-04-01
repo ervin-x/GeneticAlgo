@@ -36,7 +36,7 @@ vector<vector<bool>> PoulationGeneration(int PSize, int dim) {
     srand(clock());
     vector<vector<bool>> Pop(PSize);
 
-    for (auto Сhromo : Pop) {
+    for (auto  Сhromo : Pop) {
         for (int i = 0; i < dim; ++i) {
             Сhromo[i] = rand() % 2;
         }
@@ -78,14 +78,13 @@ vector<vector<bool>> Selection(vector<vector<bool>>& Generation)
 }
 
 
-vector<vector<bool>> Crossingover(vector<vector<bool>>& Generation)
+vector<vector<bool>> CrossingoverWithRandomPoint(vector<vector<bool>>& Generation)
 {
 	// TODO DIMA
 	RAND_MAX = Generation.size() - 1;
 	srand(time(0));
 
 	vector<vector<bool>> new_population;
-
 	while (new_population.size() != Generation.size())
 	{
 		int first_parent = rand();
@@ -98,7 +97,7 @@ vector<vector<bool>> Crossingover(vector<vector<bool>>& Generation)
 			first_parent = rand();
 			second_parent = rand();
 		}
-
+		// выбираем случайную точку кроссинговера в промежутке от 0 до RAND_MAX
 		int point_crossingover = rand() % (Generation[first_parent].size() - 2);
 
 		auto child_1 = Generation[first_parent];
@@ -120,6 +119,50 @@ vector<vector<bool>> Crossingover(vector<vector<bool>>& Generation)
 	return new_population;
 }
 
+
+
+vector<vector<bool>> CrossingoverWithMiddlePoint(vector<vector<bool>>& Generation)
+{
+    // Топовый замут от VLADOS 228 ♕♕♕ feat DiMaS 1488
+    RAND_MAX = Generation.size() - 1;
+    srand(time(0));
+
+    vector<vector<bool>> new_population;
+    // Попрошу поразмножаться
+    while (new_population.size() != Generation.size())
+    {
+        // Находим индексы двух случайных РоДиЧеЙ
+        int first_parent_idx = rand();
+        int second_parent_idx = rand();
+        // Мы против пустых и однополых браков
+        while ((Generation[first_parent_idx] == Generation[second_parent_idx]) &&
+               (Generation[first_parent_idx].empty()) &&
+               (Generation[second_parent_idx].empty()))
+        {
+            first_parent_idx = rand();
+            second_parent_idx = rand();
+        }
+        // Выбираем точку кроссинговера ~посередине
+        int point_crossingover =  Generation[first_parent_idx].size() /  2;
+        // Подготавливаем постель(деток)
+        auto child_1 = Generation[first_parent_idx];
+        auto child_2 = Generation[second_parent_idx];
+        // Сцена 18+
+        for (int j(point_crossingover); j < Generation[first_parent_idx].size(); ++j)
+        {
+            child_1[j] = Generation[second_parent_idx][j];
+            child_2[j] = Generation[first_parent_idx][j];
+        }
+        // Родители заболели коронавирусом
+        Generation[first_parent_idx].clear();
+        Generation[second_parent_idx].clear();
+        // Зато детки остаются нам
+        new_population.push_back(child_1);
+        new_population.push_back(child_2);
+    }
+
+    return new_population;
+}
 
 vector<bool> Mutation(vector<bool> Generation) {
     // TODO AKELLA
