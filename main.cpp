@@ -151,7 +151,7 @@ void GeneticAlgo(vector<int> Task) {
 
 
 vector<int> DynamicAlgo(vector<uint256_t> Task) {
-    vector<uint256_t> profits; // стоимости предметов
+	vector<uint256_t> profits; // стоимости предметов
 	vector<uint256_t> weights; // веса предметов
 	vector<int> final_set; // результирующий набор предметов
 	uint256_t target_weight; // целевой вес
