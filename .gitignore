@@ -4,3 +4,7 @@ test*
 
 # MacOS files
 .DS_Store
+
+
+# Boost library
+boost/
