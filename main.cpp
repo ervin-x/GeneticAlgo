@@ -150,13 +150,64 @@ void GeneticAlgo(vector<int> Task) {
 }
 
 
-void DynamicAlgo(vector<int> Task) {
-    /*
-    TODO AZA
-    */
+vector<int> DynamicAlgo(vector<uint256_t> Task) {
+    vector<uint256_t> profits; // стоимости предметов
+	vector<uint256_t> weights; // веса предметов
+	vector<int> final_set; // результирующий набор предметов
+	uint256_t target_weight; // целевой вес
+	int subjects = Task.size() - 1; // количество предметов
+
+	// в этой матрице будут храниться решения подзадач данной задачи
+	// +1 в размерностях, так как начинаем с 0 как для количества предметов,
+	// так и для целевого веса
+	uint256_t table[subjects + 1][target_weight + 1];
+
+	for(int i = 0; i < Task.size(); i++) {
+		if (i < Task.size() - 1) {
+			// векторы введены дополнительно для облегчения решения задачи
+			profits.push_back(Task.at(i)); // стоимости равны весам
+			weights.push_back(Task.at(i)); // сохраняем веса
+			final_set.push_back(0); // изначально ни один предмет не выбран
+		} else target_weight = Task.at(i);
+	}
+
+	// построение таблицы
+	for(int i = 0; i <= subjects; i++) { // для каждого предмета
+		for(uint256_t w = 0; w <= target_weight; w++) { // для каждого целевого веса
+			// количество предметов и целевой вес = 0
+			if (i == 0 || w == 0)
+				table[i][w] = 0; // решение задачи очевидно
+			else if(weights[i] <= target_weight){
+				table[i][w] = max(
+					profits[i] + table[i - 1][target_weight - weights[i]],
+					table[i - 1][w]
+				);
+			} else table[i][w] = table[i - 1][w];
+		}
+	}
+
+	// восстановление отобранных предметов
+	uint256_t i = subjects, j = target_weight;
+	while (i > 0 && j > 0) {
+		if(table[i][j] == table[i - 1][j]){
+			// данный предмет не выбран, так как он есть в предыдущей строке
+			final_set[i] = 0;
+		} else {
+			// предмет выбран, так как его не в предыдущей строке
+			final_set[i] = 1;
+			i--; // переходим к предыдущей строке
+			j  = j - weights[i]; // уменьшаем целевой вес
+		}
+	}
+
+	return final_set;
 }
 
 
 int main() {
-    // TODO EGOR
+    vector<uint256_t> v = TaskGeneration(4, 0.1);
+	for (auto i: v){
+		cout << i << " ";
+	}
+	cout << endl;
 }
