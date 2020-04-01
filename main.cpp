@@ -1,13 +1,14 @@
 #include <iostream>
-#include <string>
 #include <vector>
 #include <cmath>
 #include <chrono>
-#include <random>
-
+#include <fstream>
+#include <boost/multiprecision/cpp_int.hpp>
+#include <boost/random.hpp>
 
 using namespace std;
 using namespace chrono;
+using namespace boost::multiprecision;
 
 void ReadCSV(){
     //from csv
@@ -21,15 +22,19 @@ void WriteCSV(){
 }
 
 
-vector<int> TaskGeneration(int dim, int density) {
-    int max_weight = pow(2, dim * density);
-    int sum = 0;
+vector<uint256_t> TaskGeneration(int dim, float density) {
+    uint256_t max_weight = uint256_t(pow(2, dim / density));
+    // cout << "Maxweight = " << max_weight << endl;
+    uint256_t sum = 0;
     long long time = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
-    srand(time);
-    vector<int> task(dim + 1);
+    boost::random::mt19937 mt;
+    boost::random::uniform_int_distribution<uint64_t> ui;
+    vector<uint256_t> task(dim + 1);
     for (int i = 0; i <= dim; i++) {
-        sum += task[i] = rand() % max_weight + 1;
+        sum += task[i] =  ui(mt) + 1;
+        // cout << "Element " << i << " = " << task[i] << endl;;
     }
+    // cout << "Sum = " << sum / 2 << endl;
     task[dim] = sum / 2;
     return task;
 }
