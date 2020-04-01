@@ -1,15 +1,22 @@
 #include <iostream>
-#include <string>
 #include <vector>
+#include <cmath>
+#include <chrono>
+#include <fstream>
 #include <ctime>
 #include <math.h>
 #include <time.h>
+
+#include <boost/multiprecision/cpp_int.hpp>
+#include <boost/random.hpp>
 
 #define PopSize 10
 #define ChromoDim 10
 #define NumIterations 100
 
 using namespace std;
+using namespace chrono;
+using namespace boost::multiprecision;
 
 
 void ReadCSV(){
@@ -24,9 +31,21 @@ void WriteCSV(){
 }
 
 
-vector<int> TaskGeneration(int dim, int D) {
-    // возвращает веса элементов vector<int> (dim + int TargetWeight)
-    // TODO MAX
+vector<uint256_t> TaskGeneration(int dim, float density) {
+    uint256_t max_weight = uint256_t(pow(2, dim / density));
+    // cout << "Maxweight = " << max_weight << endl;
+    uint256_t sum = 0;
+    long long time = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
+    boost::random::mt19937 mt;
+    boost::random::uniform_int_distribution<uint64_t> ui;
+    vector<uint256_t> task(dim + 1);
+    for (int i = 0; i <= dim; i++) {
+        sum += task[i] =  ui(mt) + 1;
+        // cout << "Element " << i << " = " << task[i] << endl;;
+    }
+    // cout << "Sum = " << sum / 2 << endl;
+    task[dim] = sum / 2;
+    return task;
 }
 
 

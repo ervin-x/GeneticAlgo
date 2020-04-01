@@ -1,0 +1,6 @@
+# Testing environment
+test*
+
+
+# MacOS files
+.DS_Store
