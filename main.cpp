@@ -187,7 +187,8 @@ vector<int> DynamicAlgo(vector<uint256_t> Task) {
 	}
 
 	// восстановление отобранных предметов
-	uint256_t i = subjects, j = target_weight;
+	int i = subjects;
+	uint64_t j = target_weight;
 	while (i > 0 && j > 0) {
 		if(table[i][j] == table[i - 1][j]){
 			// данный предмет не выбран, так как он есть в предыдущей строке
