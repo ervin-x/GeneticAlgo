@@ -19,15 +19,31 @@ using namespace chrono;
 using namespace boost::multiprecision;
 
 
-void ReadCSV(){
-    //from csv
-    // TODO MAX
+void ReadCSV(int line_number, float &density, int &pop_size, float &mutation_prob) {
+    ifstream file("in.csv");
+    if(!file.is_open()) throw runtime_error("Could not open input file");
+    string line, substr;
+    for (int i = 0; i < line_number + 1; i++) {
+        getline(file, line);
+    }
+    stringstream ss(line);
+    
+    getline(ss, substr, ',');
+    density = stof(substr);
+
+    getline(ss, substr, ',');
+    pop_size = stoi(substr);
+
+    getline(ss, substr, ',');
+    mutation_prob = stof(substr);
+    file.close();
 }
 
 
-void WriteCSV(){
-    //to csv
-    // TODO MAX
+void WriteCSV(float density, int dim, long long gen_time, long long dynamic_time){
+    ofstream file("out.csv", fstream::app);
+    file << density << ',' << dim << ',' << gen_time << ',' << dynamic_time << endl;
+    file.close();
 }
 
 
