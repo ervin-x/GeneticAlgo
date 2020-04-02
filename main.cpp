@@ -19,7 +19,7 @@ using namespace chrono;
 using namespace boost::multiprecision;
 
 
-void ReadCSV(int line_number, float *density, int *pop_size, float *mutation_prob) {
+void ReadCSV(int line_number, float &density, int &pop_size, float &mutation_prob) {
     ifstream file("in.csv");
     if(!file.is_open()) throw runtime_error("Could not open input file");
     string line, substr;
@@ -29,13 +29,13 @@ void ReadCSV(int line_number, float *density, int *pop_size, float *mutation_pro
     stringstream ss(line);
     
     getline(ss, substr, ',');
-    *density = stof(substr);
+    density = stof(substr);
 
     getline(ss, substr, ',');
-    *pop_size = stoi(substr);
+    pop_size = stoi(substr);
 
     getline(ss, substr, ',');
-    *mutation_prob = stof(substr);
+    mutation_prob = stof(substr);
     file.close();
 }
 
