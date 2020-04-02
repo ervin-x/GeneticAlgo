@@ -1,3 +1,6 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
 #include <iostream>
 #include <vector>
 #include <cmath>
@@ -39,7 +42,7 @@ void ReadCSV(int line_number, float &density, int &pop_size, float &mutation_pro
     file.close();
 }
 
-
+  
 void WriteCSV(float density, int dim, long long gen_time, long long dynamic_time){
     ofstream file("out.csv", fstream::app);
     file << density << ',' << dim << ',' << gen_time << ',' << dynamic_time << endl;
@@ -166,13 +169,29 @@ void GeneticAlgo(vector<int> Task) {
 }
 
 
-void DynamicAlgo(vector<int> Task) {
+void DynamicAlgo(vector<int> Task)
+{
     /*
     TODO AZA
     */
 }
 
-
-int main() {
-    // TODO EGOR
+int main()
+{
+    ReadCSV();                                              //считываем исходные данные из файла
+    for (int k = 1; k <= 100; k++)                          //цикл для генерации задач
+    {
+        vector<int> Task = TaskGeneration(dim, D);          //Task - текущая задача
+        clock_t start1 = clock();                           //начало отсчета времени работы алгоритма
+        GeneticAlgo(Task);                                  //выполнение задачи методом генетического алгоритма
+        clock_t end1 = clock();                             //конец отсчета времени работы алгоритма
+        seconds = (double)(end1 - start1) / CLOCKS_PER_SEC; //вычисление времени работы алгоритма
+        WriteCSV();                                         //запись результатов работы алгоритма в файл
+        clock_t start2 = clock();                           //начало отсчета времени работы алгоритма
+        DynamicAlgo(Task);                                  //выполнение задачи методом динамического программирования
+        clock_t end2 = clock();                             //конец отсчета времени работы алгоритма
+        seconds = (double)(end2 - start2) / CLOCKS_PER_SEC; //вычисление времени работы алгоритма
+        WriteCSV();                                         //запись результатов работы алгоритма в файл
+    };
+    return 0;
 }
