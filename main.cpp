@@ -16,6 +16,7 @@
 #define PopSize 10
 #define ChromoDim 10
 #define NumIterations 100
+#define ExitThreshold 10
 
 using namespace std;
 using namespace chrono;
@@ -164,16 +165,36 @@ vector<bool> Mutation(vector<bool> Generation) {
 }
 
 
-void GeneticAlgo(vector<int> Task) {
-    //TODO VANES
-}
+vector<bool> GeneticAlgo(vector<int> Task, int PSize, int dim, int NumIterations) {
 
+    vector<vector<bool>> population = PoulationGeneration(PSize, dim);
+	for (int i = 0; i < NumIterations; ++i) {
 
-void DynamicAlgo(vector<int> Task)
-{
-    /*
-    TODO AZA
-    */
+		population = Selection(population);
+		population = Crossingover(population);
+		population = Mutation(population);
+
+		int fit_value = 0;
+		int repeat_num = 0;
+		vector<bool> best_chromo;
+
+		// выбор лучшей хромосомы по фитнес функции
+		for (auto chromo : population) {
+			int _fit_value = FitnessFunction(chromo);
+			if (_fit_value > fit_value) {
+				fit_value = _fit_value;
+				best_chromo = chromo;
+			} else if (_fit_value == fit_value) {
+				if (repeat_num >= ExitThreshold) {
+
+				return best_chromo;
+
+				} else {
+					++repeat_num;
+				}
+			} 
+		}
+	}
 }
 
 int main()
