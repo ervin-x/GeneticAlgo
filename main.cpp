@@ -35,9 +35,9 @@ vector<uint256_t> TaskGeneration(int dim, float density) {
     uint256_t max_weight = uint256_t(pow(2, dim / density));
     // cout << "Maxweight = " << max_weight << endl;
     uint256_t sum = 0;
-    long long time = duration_cast<milliseconds>(system_clock::now().time_since_epoch()).count();
-    boost::random::mt19937 mt;
-    boost::random::uniform_int_distribution<uint64_t> ui;
+    long long time = duration_cast<microseconds>(system_clock::now().time_since_epoch()).count();
+    boost::random::mt19937 mt(time);
+    boost::random::uniform_int_distribution<uint256_t> ui(uint256_t(1), max_weight);
     vector<uint256_t> task(dim + 1);
     for (int i = 0; i <= dim; i++) {
         sum += task[i] =  ui(mt) + 1;
