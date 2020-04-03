@@ -167,8 +167,8 @@ vector<vector<bool>> Crossingover(vector<vector<bool>>& Generation)
 vector<bool> Mutation(vector<bool> Generation) { // DONE -> AZAMAT
 	// настраиваем ГПСЧ
 	long long time = duration_cast<microseconds>(system_clock::now().time_since_epoch()).count();
-    boost::random::mt19937 mt(time);
-    boost::random::uniform_real_distribution<double> ui(0, 1);
+    	boost::random::mt19937 mt(time);
+    	boost::random::uniform_real_distribution<double> ui(0, 1);
 	// случайным образом выбираем ген для инвертирования
 	int genToChange = rand() % Generation.size();
 	// с вероятностью MutationChance инвертируем данный ген
