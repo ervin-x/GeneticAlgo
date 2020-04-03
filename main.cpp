@@ -27,7 +27,7 @@ const int ExitThreshold = 10;
 const float MutationChance = 0.001; // вероятность мутации
 
 
-void ReadCSV(const string ifilename, int line_number, float &density, int &pop_size, float &mutation_prob) {
+void ReadCSV(const string& ifilename, int line_number, float &density, int &pop_size, float &mutation_prob) {
     ifstream file(ifilename);
     if(!file.is_open()) throw runtime_error("Could not open input file");
     string line, substr;
@@ -48,7 +48,7 @@ void ReadCSV(const string ifilename, int line_number, float &density, int &pop_s
 }
 
   
-void WriteCSV(const string ofilename, float density, int dim, long long gen_time, long long dynamic_time){
+void WriteCSV(const string& ofilename, float density, int dim, long long gen_time, long long dynamic_time){
     ofstream file(ofilename, fstream::app);
     file << density << ',' << dim << ',' << gen_time << ',' << dynamic_time << endl;
     file.close();
@@ -88,7 +88,7 @@ vector<vector<bool>> PoulationGeneration(int PSize, int dim) {
 }
 
 
-int FitnessFunction(vector<bool> Chromo, vector<bool> Weights, int TWeight) { // DONE -> AZAMAT
+int FitnessFunction(vector<bool> Chromo, vector<int> Weights, int TWeight) { // DONE -> AZAMAT
 	int sum = 0;
 	for(int i = 0; i < Chromo.size(); ++i) {
 		if (Chromo[i]) {
@@ -203,7 +203,7 @@ vector<bool> GeneticAlgo(vector<int> Task, int PSize, int NumIterations) {
 
 		// выбор лучшей хромосомы по фитнес функции
 		for (auto chromo : population) {
-			int _fit_value = FitnessFunction(chromo, );
+			int _fit_value = FitnessFunction(chromo, Weights, TargetWeight);
 			if (_fit_value > fit_value) {
 				fit_value = _fit_value;
 				best_chromo = chromo;
