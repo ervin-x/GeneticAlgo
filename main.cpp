@@ -17,6 +17,7 @@
 #define ChromoDim 10
 #define NumIterations 100
 #define ExitThreshold 10
+#define MutationChance 0.001 // вероятность мутации
 
 using namespace std;
 using namespace chrono;
@@ -85,8 +86,12 @@ vector<vector<bool>> PoulationGeneration(int PSize, int dim) {
 }
 
 
-int FitnessFunction(vector<bool> X) {
-    // TODO AKELLA
+int FitnessFunction(vector<bool> X) { // DONE -> AZAMAT
+	int sum = 0;
+	for(int i : X) { // суммируем значения всех генов
+		sum += i;
+	}
+	return sum;
 }
 
 
@@ -115,7 +120,6 @@ vector<vector<bool>> Selection(vector<vector<bool>>& Generation)
 
 	return intermediate_population;
 }
-
 
 vector<vector<bool>> Crossingover(vector<vector<bool>>& Generation)
 {
@@ -160,8 +164,18 @@ vector<vector<bool>> Crossingover(vector<vector<bool>>& Generation)
 }
 
 
-vector<bool> Mutation(vector<bool> Generation) {
-    // TODO AKELLA
+vector<bool> Mutation(vector<bool> Generation) { // DONE -> AZAMAT
+	// настраиваем ГПСЧ
+	long long time = duration_cast<microseconds>(system_clock::now().time_since_epoch()).count();
+    	boost::random::mt19937 mt(time);
+    	boost::random::uniform_real_distribution<double> ui(0, 1);
+	// случайным образом выбираем ген для инвертирования
+	int genToChange = rand() % Generation.size();
+	// с вероятностью MutationChance инвертируем данный ген
+	if (MutationChance > ui(mt))
+		Generation[genToChange] = !Generation[genToChange];
+
+	return Generation;
 }
 
 
@@ -197,6 +211,66 @@ vector<bool> GeneticAlgo(vector<int> Task, int PSize, int dim, int NumIterations
 	}
 }
 
+vector<int> DynamicAlgo(vector<int64_t> Task) { // DONE -> AZAMAT
+	vector<int64_t> profits; // стоимости предметов
+	vector<int64_t> weights; // веса предметов
+	vector<int> final_set; // результирующий набор предметов
+	int64_t target_weight; // целевой вес
+	int subjects = Task.size() - 1; // количество предметов
+
+	// в этой матрице будут храниться решения подзадач данной задачи
+	// +1 в размерностях, так как начинаем с 0 как для количества предметов,
+	// так и для целевого веса
+	int64_t table[subjects + 1][target_weight + 1];
+
+	// предмет с нулевым весом и стоимостью
+	// необходим для общности решения
+	profits.push_back(0);
+	weights.push_back(0);
+
+	for(int i = 0; i < Task.size(); i++) {
+		if (i < Task.size() - 1) {
+			// векторы введены дополнительно для облегчения решения задачи
+			profits.push_back(Task.at(i)); // стоимости равны весам
+			weights.push_back(Task.at(i)); // сохраняем веса
+			final_set.push_back(0); // изначально ни один предмет не выбран
+		}
+		else target_weight = Task.at(i); // сохраняется целевой вес
+	}
+
+	// построение таблицы
+	for(int i = 0; i <= subjects; i++) { // для каждого предмета
+		for(int64_t w = 0; w <= target_weight; w++) { // для каждого целевого веса
+			// количество предметов и целевой вес = 0
+			if (i == 0 || w == 0)
+				table[i][w] = 0; // решение задачи очевидно
+			else if(weights[i] <= w){ // вес предмета меньше или равен рассматриваемому целевому весу
+				table[i][w] = max(
+					profits[i] + table[i - 1][w - weights[i]],
+					table[i - 1][w]
+				);
+			} else table[i][w] = table[i - 1][w]; // вес предмета больше рассматриваемого целевого веса
+		}
+	}
+
+	// восстановление отобранных предметов
+	int i = subjects;
+	int64_t j = target_weight;
+	while (i > 0 && j > 0) {
+		if(table[i][j] == table[i - 1][j]){
+			// данный предмет не выбран, так как он есть в предыдущей строке
+			final_set[i - 1] = 0;
+		} else {
+			// предмет выбран, так как его нет в предыдущей строке
+			final_set[i - 1] = 1;
+			j = j - weights[i]; // уменьшаем целевой вес для продолжения поиска
+		}
+		i--; // переходим к предыдущей строке
+	}
+
+	return final_set;
+}
+
 int main()
 {
     ReadCSV();                                              //считываем исходные данные из файла
@@ -214,5 +288,6 @@ int main()
         seconds = (double)(end2 - start2) / CLOCKS_PER_SEC; //вычисление времени работы алгоритма
         WriteCSV();                                         //запись результатов работы алгоритма в файл
     };
+
     return 0;
 }
