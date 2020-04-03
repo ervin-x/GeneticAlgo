@@ -13,19 +13,22 @@
 #include <boost/multiprecision/cpp_int.hpp>
 #include <boost/random.hpp>
 
-#define PopSize 10
-#define ChromoDim 10
-#define NumIterations 100
-#define ExitThreshold 10
-#define MutationChance 0.001 // вероятность мутации
-
 using namespace std;
 using namespace chrono;
 using namespace boost::multiprecision;
 
+const string ifilename = "in.csv";
+const string ofilename = "out.csv";
 
-void ReadCSV(int line_number, float &density, int &pop_size, float &mutation_prob) {
-    ifstream file("in.csv");
+const int PopSize = 10;
+const int ChromoDim = 10;
+const int NumIterations = 100;
+const int ExitThreshold = 10;
+const float MutationChance = 0.001; // вероятность мутации
+
+
+void ReadCSV(const string ifilename, int line_number, float &density, int &pop_size, float &mutation_prob) {
+    ifstream file(ifilename);
     if(!file.is_open()) throw runtime_error("Could not open input file");
     string line, substr;
     for (int i = 0; i < line_number + 1; i++) {
@@ -45,8 +48,8 @@ void ReadCSV(int line_number, float &density, int &pop_size, float &mutation_pro
 }
 
   
-void WriteCSV(float density, int dim, long long gen_time, long long dynamic_time){
-    ofstream file("out.csv", fstream::app);
+void WriteCSV(const string ofilename, float density, int dim, long long gen_time, long long dynamic_time){
+    ofstream file(ofilename, fstream::app);
     file << density << ',' << dim << ',' << gen_time << ',' << dynamic_time << endl;
     file.close();
 }
@@ -71,14 +74,13 @@ vector<uint256_t> TaskGeneration(int dim, float density) {
 
 
 vector<vector<bool>> PoulationGeneration(int PSize, int dim) {
-    /*generate a random population of chromosomes*/
 
     srand(clock());
     vector<vector<bool>> Pop(PSize);
 
-    for (auto Сhromo : Pop) {
+    for (auto Chromo : Pop) {
         for (int i = 0; i < dim; ++i) {
-            Сhromo[i] = rand() % 2;
+            Chromo[i] = rand() % 2;
         }
     }
 
@@ -86,18 +88,19 @@ vector<vector<bool>> PoulationGeneration(int PSize, int dim) {
 }
 
 
-int FitnessFunction(vector<bool> X) { // DONE -> AZAMAT
+int FitnessFunction(vector<bool> Chromo, vector<bool> Weights, int TWeight) { // DONE -> AZAMAT
 	int sum = 0;
-	for(int i : X) { // суммируем значения всех генов
-		sum += i;
+	for(int i = 0; i < Chromo.size(); ++i) {
+		if (Chromo[i]) {
+			sum += Weights[i];
+		}
 	}
-	return sum;
+	return abs (TWeight - sum);
 }
 
 
 vector<vector<bool>> Selection(vector<vector<bool>>& Generation)
 {
-	// TODO DIMA
 	// вычисляем сумму фитнесс-функций всех особей
 	long long sum_fitness_func(0);
 	for (int i(0); i < Generation.size(); ++i)
@@ -124,7 +127,7 @@ vector<vector<bool>> Selection(vector<vector<bool>>& Generation)
 vector<vector<bool>> Crossingover(vector<vector<bool>>& Generation)
 {
 	// TODO DIMA
-	RAND_MAX = Generation.size() - 1;
+	// RAND_MAX = Generation.size() - 1;
 	srand(time(0));
 
 	vector<vector<bool>> new_population;
@@ -164,24 +167,30 @@ vector<vector<bool>> Crossingover(vector<vector<bool>>& Generation)
 }
 
 
-vector<bool> Mutation(vector<bool> Generation) { // DONE -> AZAMAT
+vector<vector<bool>> Mutation(vector<vector<bool>> Generation) { // DONE -> AZAMAT
 	// настраиваем ГПСЧ
 	long long time = duration_cast<microseconds>(system_clock::now().time_since_epoch()).count();
     	boost::random::mt19937 mt(time);
     	boost::random::uniform_real_distribution<double> ui(0, 1);
 	// случайным образом выбираем ген для инвертирования
-	int genToChange = rand() % Generation.size();
+	int chronoToChange = rand() % Generation.size();
 	// с вероятностью MutationChance инвертируем данный ген
 	if (MutationChance > ui(mt))
-		Generation[genToChange] = !Generation[genToChange];
+		for (bool Gen: Generation[chronoToChange]){
+			Gen = !Gen;
+		}
 
 	return Generation;
 }
 
 
-vector<bool> GeneticAlgo(vector<int> Task, int PSize, int dim, int NumIterations) {
+vector<bool> GeneticAlgo(vector<int> Task, int PSize, int NumIterations) {
 
+	int dim = Task.size() - 1;
+	int TargetWeight = Task.back();
+	vector<int> Weights(Task.begin(), Task.end()-1);
     vector<vector<bool>> population = PoulationGeneration(PSize, dim);
+
 	for (int i = 0; i < NumIterations; ++i) {
 
 		population = Selection(population);
@@ -194,7 +203,7 @@ vector<bool> GeneticAlgo(vector<int> Task, int PSize, int dim, int NumIterations
 
 		// выбор лучшей хромосомы по фитнес функции
 		for (auto chromo : population) {
-			int _fit_value = FitnessFunction(chromo);
+			int _fit_value = FitnessFunction(chromo, );
 			if (_fit_value > fit_value) {
 				fit_value = _fit_value;
 				best_chromo = chromo;
@@ -273,20 +282,33 @@ vector<int> DynamicAlgo(vector<int64_t> Task) { // DONE -> AZAMAT
 
 int main()
 {
-    ReadCSV();                                              //считываем исходные данные из файла
-    for (int k = 1; k <= 100; k++)                          //цикл для генерации задач
+	int line_number;
+	float density;
+	int pop_size;
+	float mutation_prob;
+
+    ReadCSV(ifilename, line_number, density, pop_size, mutation_prob);
+	cout << "input parameters:"
+		 << " line_number: " << line_number
+		 << " density: " << density
+		 << " pop_size: " << pop_size
+		 << " mutation_prob: " << mutation_prob
+		 << endl;
+	
+    for (int k = 1; k <= 100; k++)
     {
-        vector<int> Task = TaskGeneration(dim, D);          //Task - текущая задача
-        clock_t start1 = clock();                           //начало отсчета времени работы алгоритма
-        GeneticAlgo(Task);                                  //выполнение задачи методом генетического алгоритма
-        clock_t end1 = clock();                             //конец отсчета времени работы алгоритма
-        seconds = (double)(end1 - start1) / CLOCKS_PER_SEC; //вычисление времени работы алгоритма
-        WriteCSV();                                         //запись результатов работы алгоритма в файл
-        clock_t start2 = clock();                           //начало отсчета времени работы алгоритма
-        DynamicAlgo(Task);                                  //выполнение задачи методом динамического программирования
-        clock_t end2 = clock();                             //конец отсчета времени работы алгоритма
-        seconds = (double)(end2 - start2) / CLOCKS_PER_SEC; //вычисление времени работы алгоритма
-        WriteCSV();                                         //запись результатов работы алгоритма в файл
+        vector<uint256_t> Task = TaskGeneration(pop_size, density);
+        clock_t start1 = clock();
+        GeneticAlgo(Task, pop_size, NumIterations);
+        clock_t end1 = clock();
+        seconds = (double)(end1 - start1) / CLOCKS_PER_SEC;
+        WriteCSV();
+        clock_t start2 = clock();
+        DynamicAlgo(Task);
+        clock_t end2 = clock();
+        seconds = (double)(end2 - start2) / CLOCKS_PER_SEC;
+
+        WriteCSV();
     };
 
     return 0;
