@@ -9,13 +9,12 @@
 #include <ctime>
 #include <math.h>
 #include <time.h>
+#include <sstream>
 
-#include <boost/multiprecision/cpp_int.hpp>
 #include <boost/random.hpp>
 
 using namespace std;
 using namespace chrono;
-using namespace boost::multiprecision;
 
 const string ifilename = "in.csv";
 const string ofilename = "out.csv";
@@ -55,14 +54,14 @@ void WriteCSV(const string& ofilename, float density, int dim, long long gen_tim
 }
 
 
-vector<uint256_t> TaskGeneration(int dim, float density) {
-    uint256_t max_weight = uint256_t(pow(2, dim / density));
+vector<int> TaskGeneration(int dim, float density) {
+    int max_weight = int(pow(2, dim / density));
     // cout << "Maxweight = " << max_weight << endl;
-    uint256_t sum = 0;
+    int sum = 0;
     long long time = duration_cast<microseconds>(system_clock::now().time_since_epoch()).count();
     boost::random::mt19937 mt(time);
-    boost::random::uniform_int_distribution<uint256_t> ui(uint256_t(1), max_weight);
-    vector<uint256_t> task(dim + 1);
+    boost::random::uniform_int_distribution<int> ui(int(1), max_weight);
+    vector<int> task(dim + 1);
     for (int i = 0; i <= dim; i++) {
         sum += task[i] =  ui(mt) + 1;
         // cout << "Element " << i << " = " << task[i] << endl;;
@@ -99,18 +98,18 @@ int FitnessFunction(vector<bool> Chromo, vector<int> Weights, int TWeight) { // 
 }
 
 
-vector<vector<bool>> Selection(vector<vector<bool>>& Generation)
+vector<vector<bool>> Selection(vector<vector<bool>>& Generation, vector<int> Weights, int TWeight)
 {
 	// вычисляем сумму фитнесс-функций всех особей
 	long long sum_fitness_func(0);
 	for (int i(0); i < Generation.size(); ++i)
-		sum_fitness_func += FitnessFunction(Generation[i]);
+		sum_fitness_func += FitnessFunction(Generation[i], Weights, TWeight);
 
 	// вычисляем количество особей i-хромосомы в промежуточной популяции
 	vector<int> probabilities_individuals;
 	for (int i(0); i < Generation.size(); ++i)
 	{
-		double hit_probability = FitnessFunction(Generation[i]) * Generation.size() / sum_fitness_func;
+		double hit_probability = FitnessFunction(Generation[i], Weights, TWeight) * Generation.size() / sum_fitness_func;
 		int int_hit_probabilit = round(hit_probability);
 		probabilities_individuals.push_back(int_hit_probabilit);
 	}
@@ -187,24 +186,24 @@ vector<vector<bool>> Mutation(vector<vector<bool>> Generation) { // DONE -> AZAM
 vector<bool> GeneticAlgo(vector<int> Task, int PSize, int NumIterations) {
 
 	int dim = Task.size() - 1;
-	int TargetWeight = Task.back();
+	int TWeight = Task.back();
 	vector<int> Weights(Task.begin(), Task.end()-1);
     vector<vector<bool>> population = PoulationGeneration(PSize, dim);
 
 	for (int i = 0; i < NumIterations; ++i) {
 
-		population = Selection(population);
+		population = Selection(population, Weights, TWeight);
 		population = Crossingover(population);
 		population = Mutation(population);
 
-		int fit_value = 0;
+		int fit_value = TWeight;
 		int repeat_num = 0;
 		vector<bool> best_chromo;
 
 		// выбор лучшей хромосомы по фитнес функции
 		for (auto chromo : population) {
-			int _fit_value = FitnessFunction(chromo, Weights, TargetWeight);
-			if (_fit_value > fit_value) {
+			int _fit_value = FitnessFunction(chromo, Weights, TWeight);
+			if (_fit_value < fit_value) {
 				fit_value = _fit_value;
 				best_chromo = chromo;
 			} else if (_fit_value == fit_value) {
@@ -220,17 +219,17 @@ vector<bool> GeneticAlgo(vector<int> Task, int PSize, int NumIterations) {
 	}
 }
 
-vector<int> DynamicAlgo(vector<int64_t> Task) { // DONE -> AZAMAT
-	vector<int64_t> profits; // стоимости предметов
-	vector<int64_t> weights; // веса предметов
+vector<int> DynamicAlgo(vector<int> Task) { // DONE -> AZAMAT
+	vector<int> profits; // стоимости предметов
+	vector<int> weights; // веса предметов
 	vector<int> final_set; // результирующий набор предметов
-	int64_t target_weight; // целевой вес
+	int target_weight; // целевой вес
 	int subjects = Task.size() - 1; // количество предметов
 
 	// в этой матрице будут храниться решения подзадач данной задачи
 	// +1 в размерностях, так как начинаем с 0 как для количества предметов,
 	// так и для целевого веса
-	int64_t table[subjects + 1][target_weight + 1];
+	int table[subjects + 1][target_weight + 1];
 
 	// предмет с нулевым весом и стоимостью
 	// необходим для общности решения
@@ -249,7 +248,7 @@ vector<int> DynamicAlgo(vector<int64_t> Task) { // DONE -> AZAMAT
 
 	// построение таблицы
 	for(int i = 0; i <= subjects; i++) { // для каждого предмета
-		for(int64_t w = 0; w <= target_weight; w++) { // для каждого целевого веса
+		for(int w = 0; w <= target_weight; w++) { // для каждого целевого веса
 			// количество предметов и целевой вес = 0
 			if (i == 0 || w == 0)
 				table[i][w] = 0; // решение задачи очевидно
@@ -264,7 +263,7 @@ vector<int> DynamicAlgo(vector<int64_t> Task) { // DONE -> AZAMAT
 
 	// восстановление отобранных предметов
 	int i = subjects;
-	int64_t j = target_weight;
+	int j = target_weight;
 	while (i > 0 && j > 0) {
 		if(table[i][j] == table[i - 1][j]){
 			// данный предмет не выбран, так как он есть в предыдущей строке
@@ -287,29 +286,41 @@ int main()
 	int pop_size;
 	float mutation_prob;
 
-    ReadCSV(ifilename, line_number, density, pop_size, mutation_prob);
+    ReadCSV("in.csv", 1, density, pop_size, mutation_prob);
 	cout << "input parameters:"
 		 << " line_number: " << line_number
 		 << " density: " << density
 		 << " pop_size: " << pop_size
 		 << " mutation_prob: " << mutation_prob
 		 << endl;
-	
+
+	long long gen_time = 0;
+	long long dynamic_time = 0;
+
     for (int k = 1; k <= 100; k++)
     {
-        vector<uint256_t> Task = TaskGeneration(pop_size, density);
-        clock_t start1 = clock();
-        GeneticAlgo(Task, pop_size, NumIterations);
-        clock_t end1 = clock();
-        seconds = (double)(end1 - start1) / CLOCKS_PER_SEC;
-        WriteCSV();
-        clock_t start2 = clock();
-        DynamicAlgo(Task);
-        clock_t end2 = clock();
-        seconds = (double)(end2 - start2) / CLOCKS_PER_SEC;
+        vector<int> Task = TaskGeneration(pop_size, density);
 
-        WriteCSV();
-    };
+        clock_t start_time = clock();
+        GeneticAlgo(Task, pop_size, NumIterations);
+        gen_time += (long long)(clock() - start_time) / CLOCKS_PER_SEC;
+
+        start_time = clock();
+        DynamicAlgo(Task);
+        dynamic_time += (long long)(start_time - start_time) / CLOCKS_PER_SEC;
+
+    }
+
+	gen_time /= 100;
+	dynamic_time /= 100;
+
+	WriteCSV(ofilename, density, pop_size, gen_time, dynamic_time);
+	cout << "output parameters:"
+		 << " density: " << density
+		 << " pop_size: " << pop_size
+		 << " gen_time: " << gen_time
+		 << " dynamic_time: " << dynamic_time
+		 << endl;
 
     return 0;
 }
