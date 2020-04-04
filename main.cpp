@@ -79,7 +79,7 @@ vector<vector<bool>> PoulationGeneration(int PSize, int dim) {
 
     for (auto Chromo : Pop) {
         for (int i = 0; i < dim; ++i) {
-            Chromo[i] = rand() % 2;
+            Chromo.push_back(rand() % 2);
         }
     }
 
@@ -183,7 +183,7 @@ vector<vector<bool>> Mutation(vector<vector<bool>> Generation) { // DONE -> AZAM
 }
 
 
-vector<bool> GeneticAlgo(vector<int> Task, int PSize, int NumIterations) {
+vector<bool> GeneticAlgo(const vector<int>& Task, const int& PSize, const int& NumIterations) {
 
 	int dim = Task.size() - 1;
 	int TWeight = Task.back();
@@ -281,12 +281,12 @@ vector<int> DynamicAlgo(vector<int> Task) { // DONE -> AZAMAT
 
 int main()
 {
-	int line_number;
+	int line_number = 0;
 	float density;
 	int pop_size;
 	float mutation_prob;
 
-    ReadCSV("in.csv", 1, density, pop_size, mutation_prob);
+    ReadCSV(ifilename, line_number, density, pop_size, mutation_prob);
 	cout << "input parameters:"
 		 << " line_number: " << line_number
 		 << " density: " << density
