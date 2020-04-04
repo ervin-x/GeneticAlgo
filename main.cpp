@@ -55,8 +55,9 @@ void WriteCSV(const string& ofilename, float density, int dim, long long gen_tim
 
 
 vector<int> TaskGeneration(int dim, float density) {
+	cout << "In TaskGeneration" << endl;
     int max_weight = int(pow(2, dim / density));
-    // cout << "Maxweight = " << max_weight << endl;
+    //cout << "Maxweight = " << max_weight << endl;
     int sum = 0;
     long long time = duration_cast<microseconds>(system_clock::now().time_since_epoch()).count();
     boost::random::mt19937 mt(time);
@@ -73,9 +74,10 @@ vector<int> TaskGeneration(int dim, float density) {
 
 
 vector<vector<bool>> PoulationGeneration(int PSize, int dim) {
-
+	cout << "In PoulationGeneration" << endl;
     srand(clock());
     vector<vector<bool>> Pop(PSize);
+	// cout << "Pop.size() = " << Pop.size() << endl;
 
     for (auto Chromo : Pop) {
         for (int i = 0; i < dim; ++i) {
@@ -100,6 +102,7 @@ int FitnessFunction(vector<bool> Chromo, vector<int> Weights, int TWeight) { // 
 
 vector<vector<bool>> Selection(vector<vector<bool>>& Generation, vector<int> Weights, int TWeight)
 {
+	cout << "In Selection" << endl;
 	// вычисляем сумму фитнесс-функций всех особей
 	long long sum_fitness_func(0);
 	for (int i(0); i < Generation.size(); ++i)
@@ -125,6 +128,7 @@ vector<vector<bool>> Selection(vector<vector<bool>>& Generation, vector<int> Wei
 
 vector<vector<bool>> Crossingover(vector<vector<bool>>& Generation)
 {
+	cout << "In Crossingover" << endl;
 	// TODO DIMA
 	// RAND_MAX = Generation.size() - 1;
 	srand(time(0));
@@ -133,15 +137,17 @@ vector<vector<bool>> Crossingover(vector<vector<bool>>& Generation)
 
 	while (new_population.size() != Generation.size())
 	{
-		int first_parent = rand();
-		int second_parent = rand();
-
+		int first_parent = rand() % (Generation.size() - 1);
+		int second_parent = rand() % (Generation.size() - 1);
+		cout << "In Crossingover 1" << endl;
+		cout << "first_parent " << first_parent << "second_parent " << second_parent << endl;
 		while ((Generation[first_parent] == Generation[second_parent]) &&
 			(Generation[first_parent].empty()) &&
 			(Generation[second_parent].empty()))
 		{
-			first_parent = rand();
-			second_parent = rand();
+			cout << "In Crossingover while" << endl;
+			first_parent = rand() % (Generation.size() - 1);
+			second_parent = rand() % (Generation.size() - 1);
 		}
 
 		int point_crossingover = rand() % (Generation[first_parent].size() - 2);
@@ -167,6 +173,7 @@ vector<vector<bool>> Crossingover(vector<vector<bool>>& Generation)
 
 
 vector<vector<bool>> Mutation(vector<vector<bool>> Generation) { // DONE -> AZAMAT
+	cout << "In Mutation" << endl;
 	// настраиваем ГПСЧ
 	long long time = duration_cast<microseconds>(system_clock::now().time_since_epoch()).count();
     	boost::random::mt19937 mt(time);
@@ -185,10 +192,13 @@ vector<vector<bool>> Mutation(vector<vector<bool>> Generation) { // DONE -> AZAM
 
 vector<bool> GeneticAlgo(const vector<int>& Task, const int& PSize, const int& NumIterations) {
 
+	cout << "In GeneticAlgo" << endl;
 	int dim = Task.size() - 1;
 	int TWeight = Task.back();
 	vector<int> Weights(Task.begin(), Task.end()-1);
     vector<vector<bool>> population = PoulationGeneration(PSize, dim);
+
+	//cout << "population.size() = " << population.size() << endl;
 
 	for (int i = 0; i < NumIterations; ++i) {
 
