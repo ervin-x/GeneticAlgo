@@ -178,14 +178,15 @@ vector<vector<bool>> Mutation(vector<vector<bool>> Generation) { // DONE -> AZAM
 	long long time = duration_cast<microseconds>(system_clock::now().time_since_epoch()).count();
     	boost::random::mt19937 mt(time);
     	boost::random::uniform_real_distribution<double> ui(0, 1);
-	// случайным образом выбираем ген для инвертирования
-	int chronoToChange = rand() % Generation.size();
-	// с вероятностью MutationChance инвертируем данный ген
-	if (MutationChance > ui(mt))
-		for (bool Gen: Generation[chronoToChange]){
-			Gen = !Gen;
-		}
-
+	// пробегаемся по всему поколению
+	for(int i = 0; i < Generation.size(); i++){
+	        // случайным образом выбираем ген для инвертирования
+	        int genToChange = rand() % Generation[i].size();
+	        // с вероятностью MutationChance инвертируем данный ген
+	        if (MutationChance > ui(mt))
+			Generation[i][genToChange] = !Generation[i][genToChange];
+	}
+		
 	return Generation;
 }
 
