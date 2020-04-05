@@ -1,0 +1,14 @@
+# Testing environment
+test*
+
+
+# MacOS files
+.DS_Store
+
+
+# Input and output files
+in.csv
+out.csv
+
+# Boost library
+boost/
