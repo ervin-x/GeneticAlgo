@@ -1,15 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
 #include <iostream>
 #include <vector>
 #include <cmath>
 #include <chrono>
 #include <fstream>
 #include <ctime>
-#include <math.h>
-#include <time.h>
 #include <sstream>
+#include <map>
 
 #include <boost/random.hpp>
 
@@ -77,12 +75,13 @@ vector<vector<bool>> PoulationGeneration(int PSize, int dim) {
 	  cout << "In PoulationGeneration" << endl;
     
     srand(clock());
+	map <int, bool> int_to_bool = {{1, true}, {0, false}};
     vector<vector<bool>> Pop;
 
     for (int i = 0; i < PSize; ++i) {
         vector<bool> chromo;
         for (int j = 0; j < dim; ++j) {
-            chromo.push_back(rand() % 2);
+            chromo.push_back(int_to_bool[rand() % 2]);
         }
         Pop.push_back(chromo);
     }
