@@ -74,15 +74,17 @@ vector<int> TaskGeneration(int dim, float density) {
 
 
 vector<vector<bool>> PoulationGeneration(int PSize, int dim) {
-	cout << "In PoulationGeneration" << endl;
+	  cout << "In PoulationGeneration" << endl;
+    
     srand(clock());
-    vector<vector<bool>> Pop(PSize);
-	// cout << "Pop.size() = " << Pop.size() << endl;
+    vector<vector<bool>> Pop;
 
-    for (auto Chromo : Pop) {
-        for (int i = 0; i < dim; ++i) {
-            Chromo.push_back(rand() % 2);
+    for (int i = 0; i < PSize; ++i) {
+        vector<bool> chromo;
+        for (int j = 0; j < dim; ++j) {
+            chromo.push_back(rand() % 2);
         }
+        Pop.push_back(chromo);
     }
 
     return Pop;
@@ -310,6 +312,8 @@ int main()
 
     for (int k = 1; k <= 100; k++)
     {
+		cout << "k = " << k << endl;
+
         vector<int> Task = TaskGeneration(pop_size, density);
 
         clock_t start_time = clock();
