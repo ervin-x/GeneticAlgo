@@ -105,19 +105,26 @@ int FitnessFunction(vector<bool> Chromo, vector<int> Weights, int TWeight) { // 
 }
 
 
-vector<vector<bool>> Selection(vector<vector<bool>>& Generation, vector<int> Weights, int TWeight)
+vector<vector<bool>> Selection(const vector<vector<bool>>& Generation, const vector<int>& Weights, const int& TWeight)
 {
 	cout << "In Selection" << endl;
 	// вычисляем сумму фитнесс-функций всех особей
 	long long sum_fitness_func(0);
 	for (int i(0); i < Generation.size(); ++i)
-		sum_fitness_func += FitnessFunction(Generation[i], Weights, TWeight);
+	{
+		int p = FitnessFunction(Generation[i], Weights, TWeight);
+		cout << "a" << i << " = " << p << "\n";
+		sum_fitness_func += p;
+	}
+
+	cout << "sum_fitness_func = " << sum_fitness_func << "\n";
 
 	// вычисляем количество особей i-хромосомы в промежуточной популяции
 	vector<int> probabilities_individuals;
 	for (int i(0); i < Generation.size(); ++i)
 	{
-		double hit_probability = FitnessFunction(Generation[i], Weights, TWeight) * Generation.size() / sum_fitness_func;
+		double fit_func_item = FitnessFunction(Generation[i], Weights, TWeight);
+		double hit_probability = fit_func_item / sum_fitness_func * Generation.size();
 		int int_hit_probabilit = round(hit_probability);
 		probabilities_individuals.push_back(int_hit_probabilit);
 	}
@@ -134,28 +141,39 @@ vector<vector<bool>> Selection(vector<vector<bool>>& Generation, vector<int> Wei
 vector<vector<bool>> Crossingover(vector<vector<bool>>& Generation)
 {
 	cout << "In Crossingover" << endl;
-	// TODO DIMA
-	// RAND_MAX = Generation.size() - 1;
-	srand(time(0));
+	srand(clock());
 
 	vector<vector<bool>> new_population;
 
 	while (new_population.size() != Generation.size())
 	{
-		int first_parent = rand() % (Generation.size() - 1);
-		int second_parent = rand() % (Generation.size() - 1);
 		cout << "In Crossingover 1" << endl;
-		cout << "first_parent " << first_parent << "second_parent " << second_parent << endl;
-		while ((Generation[first_parent] == Generation[second_parent]) &&
-			(Generation[first_parent].empty()) &&
-			(Generation[second_parent].empty()))
+
+		int first_parent = -1;
+		int second_parent = -1;
+
+		while (true)
 		{
-			cout << "In Crossingover while" << endl;
-			first_parent = rand() % (Generation.size() - 1);
-			second_parent = rand() % (Generation.size() - 1);
+			first_parent = rand() % (Generation.size());
+			second_parent = rand() % (Generation.size());
+
+			cout << "first_parent " << first_parent << "second_parent " << second_parent << endl;
+
+			bool individuals_equal = true;
+			if (Generation[first_parent].size() != 0 && Generation[second_parent].size() != 0)
+				for (int i(0); i < Generation[first_parent].size(); ++i)
+					if (Generation[first_parent][i] == Generation[second_parent][i])
+						individuals_equal &= true;
+					else
+						individuals_equal &= false;
+			else
+				continue;
+
+			if (!individuals_equal)
+				break;
 		}
 
-		int point_crossingover = rand() % (Generation[first_parent].size() - 2);
+		int point_crossingover = rand() % (Generation[first_parent].size() - 1);
 
 		auto child_1 = Generation[first_parent];
 		auto child_2 = Generation[second_parent];
