@@ -97,7 +97,11 @@ int FitnessFunction(vector<bool> Chromo, vector<int> Weights, int TWeight) { // 
 			sum += Weights[i];
 		}
 	}
-	return abs (TWeight - sum);
+	if (sum > TWeight) {
+		return TWeight;
+	} else {
+		return TWeight - sum;
+	}
 }
 
 
