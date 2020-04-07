@@ -1,15 +1,13 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <time.h>
 #include <iostream>
 #include <vector>
 #include <cmath>
 #include <chrono>
 #include <fstream>
 #include <ctime>
-#include <math.h>
-#include <time.h>
 #include <sstream>
+#include <map>
 
 #include <boost/random.hpp>
 
@@ -74,15 +72,18 @@ vector<int> TaskGeneration(int dim, float density) {
 
 
 vector<vector<bool>> PoulationGeneration(int PSize, int dim) {
-	cout << "In PoulationGeneration" << endl;
+	  cout << "In PoulationGeneration" << endl;
+    
     srand(clock());
-    vector<vector<bool>> Pop(PSize);
-	// cout << "Pop.size() = " << Pop.size() << endl;
+	map <int, bool> int_to_bool = {{1, true}, {0, false}};
+    vector<vector<bool>> Pop;
 
-    for (auto Chromo : Pop) {
-        for (int i = 0; i < dim; ++i) {
-            Chromo.push_back(rand() % 2);
+    for (int i = 0; i < PSize; ++i) {
+        vector<bool> chromo;
+        for (int j = 0; j < dim; ++j) {
+            chromo.push_back(int_to_bool[rand() % 2]);
         }
+        Pop.push_back(chromo);
     }
 
     return Pop;
@@ -96,25 +97,34 @@ int FitnessFunction(vector<bool> Chromo, vector<int> Weights, int TWeight) { // 
 			sum += Weights[i];
 		}
 	}
-	return abs (TWeight - sum);
+	if (sum > TWeight) {
+		return TWeight;
+	} else {
+		return TWeight - sum;
+	}
 }
 
 
-vector<vector<bool>> Selection(vector<vector<bool>>& Generation, vector<int> Weights, int TWeight)
+vector<vector<bool>> Selection(const vector<vector<bool>>& Generation, const vector<int>& Weights, const int& TWeight)
 {
 	cout << "In Selection" << endl;
 	// вычисляем сумму фитнесс-функций всех особей
 	long long sum_fitness_func(0);
-	for (int i(0); i < Generation.size(); ++i) {
-        sum_fitness_func += FitnessFunction(Generation[i], Weights, TWeight);
-        //cout << sum_fitness_func << endl;
+	for (int i(0); i < Generation.size(); ++i)
+	{
+		int p = FitnessFunction(Generation[i], Weights, TWeight);
+		cout << "a" << i << " = " << p << "\n";
+		sum_fitness_func += p;
 	}
+
+	cout << "sum_fitness_func = " << sum_fitness_func << "\n";
 
 	// вычисляем количество особей i-хромосомы в промежуточной популяции
 	vector<int> probabilities_individuals;
 	for (int i(0); i < Generation.size(); ++i)
 	{
-		double hit_probability = FitnessFunction(Generation[i], Weights, TWeight) * Generation.size() / sum_fitness_func;
+		double fit_func_item = FitnessFunction(Generation[i], Weights, TWeight);
+		double hit_probability = fit_func_item / sum_fitness_func * Generation.size();
 		int int_hit_probabilit = round(hit_probability);
 		probabilities_individuals.push_back(int_hit_probabilit);
 	}
@@ -128,51 +138,60 @@ vector<vector<bool>> Selection(vector<vector<bool>>& Generation, vector<int> Wei
 	return intermediate_population;
 }
 
-
-
 vector<vector<bool>> Crossingover(vector<vector<bool>>& Generation)
 {
-	cout << "In Crossingover" << endl;
-	// TODO DIMA
-	// RAND_MAX = Generation.size() - 1;
-	srand(time(0));
-    cout << Generation.size() << endl;
-    //cout << Generation << endl;
-	vector<vector<bool>> new_population;
-	while (new_population.size() != Generation.size())
-	{
-		int first_parent = rand() % (Generation.size() - 1);
-		int second_parent = rand() % (Generation.size() - 1);
-		cout << "first_parent " << first_parent << "second_parent " << second_parent << endl;
-		while ((Generation[first_parent] == Generation[second_parent]) &&
-			(Generation[first_parent].empty()) &&
-			(Generation[second_parent].empty()))
-		{
-			first_parent = rand() % (Generation.size() - 1);
-			second_parent = rand() % (Generation.size() - 1);
-		    cout << first_parent << endl;
-		    cout << second_parent << endl;
-		}
-		// выбираем случайную точку кроссинговера в промежутке от 0 до RAND_MAX
-		int point_crossingover = rand() % (Generation[first_parent].size() - 2);
+    cout << "In Crossingover" << endl;
+    srand(clock());
 
-		auto child_1 = Generation[first_parent];
-		auto child_2 = Generation[second_parent];
+    vector<vector<bool>> new_population;
 
-		for (int j(point_crossingover); j < Generation[first_parent].size(); ++j)
-		{
-			child_1[j] = Generation[second_parent][j];
-			child_2[j] = Generation[first_parent][j];
-		}
+    while (new_population.size() != Generation.size())
+    {
+        cout << "In Crossingover 1" << endl;
 
-		Generation[first_parent].clear();
-		Generation[second_parent].clear();
+        int first_parent = -1;
+        int second_parent = -1;
 
-		new_population.push_back(child_1);
-		new_population.push_back(child_2);
-	}
+        while (true)
+        {
+            first_parent = rand() % (Generation.size());
+            second_parent = rand() % (Generation.size());
 
-	return new_population;
+            cout << "first_parent " << first_parent << "second_parent " << second_parent << endl;
+
+            bool individuals_equal = true;
+            if (Generation[first_parent].size() != 0 && Generation[second_parent].size() != 0)
+                for (int i(0); i < Generation[first_parent].size(); ++i)
+                    if (Generation[first_parent][i] == Generation[second_parent][i])
+                        individuals_equal &= true;
+                    else
+                        individuals_equal &= false;
+            else
+                continue;
+
+            if (!individuals_equal)
+                break;
+        }
+
+        int point_crossingover = rand() % (Generation[first_parent].size() - 1);
+
+        auto child_1 = Generation[first_parent];
+        auto child_2 = Generation[second_parent];
+
+        for (int j(point_crossingover); j < Generation[first_parent].size(); ++j)
+        {
+            child_1[j] = Generation[second_parent][j];
+            child_2[j] = Generation[first_parent][j];
+        }
+
+        Generation[first_parent].clear();
+        Generation[second_parent].clear();
+
+        new_population.push_back(child_1);
+        new_population.push_back(child_2);
+    }
+
+    return new_population;
 }
 
 
@@ -185,16 +204,29 @@ vector<vector<bool>> CrossingoverWithMiddlePoint(vector<vector<bool>>& Generatio
     // Попрошу поразмножаться
     while (new_population.size() != Generation.size())
     {
-        // Находим индексы двух случайных РоДиЧеЙ
-        int first_parent_idx = rand() % (Generation.size() - 1);
-        int second_parent_idx = rand() % (Generation.size() - 1);
-        // Мы против пустых и однополых браков
-        while ((Generation[first_parent_idx] == Generation[second_parent_idx]) &&
-               (Generation[first_parent_idx].empty()) &&
-               (Generation[second_parent_idx].empty()))
+        int first_parent_idx = 0;
+        int second_parent_idx = 0;
+
+        while (true)
         {
-            first_parent_idx = rand() % (Generation.size() - 1);
-            second_parent_idx = rand() % (Generation.size() - 1);
+            // Находим индексы двух случайных РоДиЧеЙ
+            first_parent_idx = rand() % (Generation.size());
+            second_parent_idx = rand() % (Generation.size());
+
+            cout << "first_parent " << first_parent_idx << "second_parent " << second_parent_idx << endl;
+
+            bool individuals_equal = true;
+            if (Generation[first_parent_idx].size() != 0 && Generation[second_parent_idx].size() != 0)
+                for (int i(0); i < Generation[first_parent_idx].size(); ++i)
+                    if (Generation[first_parent_idx][i] == Generation[second_parent_idx][i])
+                        individuals_equal &= true;
+                    else
+                        individuals_equal &= false;
+            else
+                continue;
+
+            if (!individuals_equal)
+                break;
         }
         // Выбираем точку кроссинговера ~посередине
         int point_crossingover =  Generation[first_parent_idx].size() /  2;
@@ -225,14 +257,15 @@ vector<vector<bool>> Mutation(vector<vector<bool>> Generation) { // DONE -> AZAM
 	long long time = duration_cast<microseconds>(system_clock::now().time_since_epoch()).count();
     	boost::random::mt19937 mt(time);
     	boost::random::uniform_real_distribution<double> ui(0, 1);
-	// случайным образом выбираем ген для инвертирования
-	int chronoToChange = rand() % Generation.size();
-	// с вероятностью MutationChance инвертируем данный ген
-	if (MutationChance > ui(mt))
-		for (bool Gen: Generation[chronoToChange]){
-			Gen = !Gen;
-		}
-
+	// пробегаемся по всему поколению
+	for(int i = 0; i < Generation.size(); i++){
+	        // случайным образом выбираем ген для инвертирования
+	        int genToChange = rand() % Generation[i].size();
+	        // с вероятностью MutationChance инвертируем данный ген
+	        if (MutationChance > ui(mt))
+			Generation[i][genToChange] = !Generation[i][genToChange];
+	}
+		
 	return Generation;
 }
 
@@ -357,6 +390,8 @@ int main()
 
     for (int k = 1; k <= 100; k++)
     {
+		cout << "k = " << k << endl;
+
         vector<int> Task = TaskGeneration(pop_size, density);
 
         clock_t start_time = clock();
