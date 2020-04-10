@@ -285,19 +285,11 @@ vector<bool> GeneticAlgo(const vector<int>& Task, const int& PSize, const int& N
 }
 
 vector<int> DynamicAlgo(vector<int> Task) { // DONE -> AZAMAT
-
-	cout << "\nIn Dynamic Algo" << endl;
-
 	vector<int> profits; // стоимости предметов
 	vector<int> weights; // веса предметов
 	vector<int> final_set; // результирующий набор предметов
 	int target_weight; // целевой вес
 	int subjects = Task.size() - 1; // количество предметов
-
-	// в этой матрице будут храниться решения подзадач данной задачи
-	// +1 в размерностях, так как начинаем с 0 как для количества предметов,
-	// так и для целевого веса
-	int table[subjects + 1][target_weight + 1];
 
 	// предмет с нулевым весом и стоимостью
 	// необходим для общности решения
@@ -313,6 +305,13 @@ vector<int> DynamicAlgo(vector<int> Task) { // DONE -> AZAMAT
 		}
 		else target_weight = Task.at(i); // сохраняется целевой вес
 	}
+
+	// в этой матрице будут храниться решения подзадач данной задачи
+	// +1 в размерностях, так как начинаем с 0 как для количества предметов,
+	// так и для целевого веса
+	int** table = new int*[subjects + 1];
+	for(int i = 0; i < subjects + 1; i++)
+		table[i] = new int[target_weight + 1];
 
 	// построение таблицы
 	for(int i = 0; i <= subjects; i++) { // для каждого предмета
@@ -343,6 +342,11 @@ vector<int> DynamicAlgo(vector<int> Task) { // DONE -> AZAMAT
 		}
 		i--; // переходим к предыдущей строке
 	}
+
+	// очистка памяти
+	for(int i = 0; i < subjects + 1; i++)
+		delete table[i];
+	delete[] table;
 
 	return final_set;
 }
