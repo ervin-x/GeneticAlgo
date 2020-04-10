@@ -359,11 +359,11 @@ int main()
 			vector<int> Task = TaskGeneration(pop_size, density);
 
 			clock_t start_time = clock();
-			GeneticAlgo(Task, pop_size, NumIterations);
+			vector<bool> bestGAChromo = GeneticAlgo(Task, pop_size, NumIterations);
 			gen_time += (long long)(clock() - start_time) / CLOCKS_PER_SEC;
 
 			start_time = clock();
-			DynamicAlgo(Task);
+			vector<int> bestDynChromo = DynamicAlgo(Task);
 			dynamic_time += (long long)(start_time - start_time) / CLOCKS_PER_SEC;
 
 		}
