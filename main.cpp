@@ -105,6 +105,23 @@ int FitnessFunction(vector<bool> Chromo, vector<int> Weights, int TWeight) { // 
 }
 
 
+int FitnessFunctionMod(vector<bool> Chromo, vector<int> Weights, int TWeight) {
+	int sum = 0;
+	int glob_sum = 0;
+	for(int i = 0; i < Chromo.size(); ++i) {
+		if (Chromo[i]) {
+			sum += Weights[i];
+		}
+		glob_sum += Weights[i];
+	}
+	if (sum > TWeight) {
+		return 0;
+	} else {
+		return glob_sum - abs (sum - TWeight);
+	}
+}
+
+
 vector<vector<bool>> Selection(const vector<vector<bool>>& Generation, const vector<int>& Weights, const int& TWeight)
 {
 	cout << "In Selection" << endl;
@@ -112,7 +129,7 @@ vector<vector<bool>> Selection(const vector<vector<bool>>& Generation, const vec
 	long long sum_fitness_func(0);
 	for (int i(0); i < Generation.size(); ++i)
 	{
-		int p = FitnessFunction(Generation[i], Weights, TWeight);
+		int p = FitnessFunctionMod(Generation[i], Weights, TWeight);
 		cout << "a" << i << " = " << p << "\n";
 		sum_fitness_func += p;
 	}
@@ -123,7 +140,7 @@ vector<vector<bool>> Selection(const vector<vector<bool>>& Generation, const vec
 	vector<int> probabilities_individuals;
 	for (int i(0); i < Generation.size(); ++i)
 	{
-		double fit_func_item = FitnessFunction(Generation[i], Weights, TWeight);
+		double fit_func_item = FitnessFunctionMod(Generation[i], Weights, TWeight);
 		double hit_probability = fit_func_item / sum_fitness_func * Generation.size();
 		int int_hit_probabilit = round(hit_probability);
 		probabilities_individuals.push_back(int_hit_probabilit);
@@ -236,8 +253,8 @@ vector<bool> GeneticAlgo(const vector<int>& Task, const int& PSize, const int& N
 
 		// выбор лучшей хромосомы по фитнес функции
 		for (auto chromo : population) {
-			int _fit_value = FitnessFunction(chromo, Weights, TWeight);
-			if (_fit_value < fit_value) {
+			int _fit_value = FitnessFunctionMod(chromo, Weights, TWeight);
+			if (_fit_value > fit_value) {
 				fit_value = _fit_value;
 				best_chromo = chromo;
 			} else if (_fit_value == fit_value) {
@@ -315,48 +332,54 @@ vector<int> DynamicAlgo(vector<int> Task) { // DONE -> AZAMAT
 
 int main()
 {
-	int line_number = 0;
+	int num_file_lines = 4;
+
+	// int line_number = 0;
 	float density;
 	int pop_size;
 	float mutation_prob;
 
-    ReadCSV(ifilename, line_number, density, pop_size, mutation_prob);
-	cout << "input parameters:"
-		 << " line_number: " << line_number
-		 << " density: " << density
-		 << " pop_size: " << pop_size
-		 << " mutation_prob: " << mutation_prob
-		 << endl;
+	for (int l = 0; l < num_file_lines; ++l) {
 
-	long long gen_time = 0;
-	long long dynamic_time = 0;
+		ReadCSV(ifilename, l, density, pop_size, mutation_prob);
+		cout << "input parameters:"
+			<< " line_number: " << l
+			<< " density: " << density
+			<< " pop_size: " << pop_size
+			<< " mutation_prob: " << mutation_prob
+			<< endl;
 
-    for (int k = 1; k <= 100; k++)
-    {
-		cout << "k = " << k << endl;
+		long long gen_time = 0;
+		long long dynamic_time = 0;
 
-        vector<int> Task = TaskGeneration(pop_size, density);
+		for (int k = 1; k <= 100; k++)
+		{
+			cout << "k = " << k << endl;
 
-        clock_t start_time = clock();
-        GeneticAlgo(Task, pop_size, NumIterations);
-        gen_time += (long long)(clock() - start_time) / CLOCKS_PER_SEC;
+			vector<int> Task = TaskGeneration(pop_size, density);
 
-        start_time = clock();
-        DynamicAlgo(Task);
-        dynamic_time += (long long)(start_time - start_time) / CLOCKS_PER_SEC;
+			clock_t start_time = clock();
+			GeneticAlgo(Task, pop_size, NumIterations);
+			gen_time += (long long)(clock() - start_time) / CLOCKS_PER_SEC;
 
-    }
+			start_time = clock();
+			DynamicAlgo(Task);
+			dynamic_time += (long long)(start_time - start_time) / CLOCKS_PER_SEC;
 
-	gen_time /= 100;
-	dynamic_time /= 100;
+		}
 
-	WriteCSV(ofilename, density, pop_size, gen_time, dynamic_time);
-	cout << "output parameters:"
-		 << " density: " << density
-		 << " pop_size: " << pop_size
-		 << " gen_time: " << gen_time
-		 << " dynamic_time: " << dynamic_time
-		 << endl;
+		gen_time /= 100;
+		dynamic_time /= 100;
+
+		WriteCSV(ofilename, density, pop_size, gen_time, dynamic_time);
+		cout << "output parameters:"
+			<< " density: " << density
+			<< " pop_size: " << pop_size
+			<< " gen_time: " << gen_time
+			<< " dynamic_time: " << dynamic_time
+			<< endl;
+
+	}
 
     return 0;
 }
