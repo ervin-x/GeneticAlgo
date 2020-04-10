@@ -23,6 +23,20 @@ const int NumIterations = 100;
 const int ExitThreshold = 10;
 const float MutationChance = 0.001; // вероятность мутации
 
+void PrintChromo(const vector<bool>& Chromo) {
+	cout << "\nchromo ";
+	for (bool gen: Chromo) {
+		cout << gen << " ";
+	}
+}
+
+
+void PrintGeneration(const vector<vector<bool>>& Generation) {
+	for (vector<bool> chromo : Generation) {
+		PrintChromo(chromo);
+	}
+}
+
 
 void ReadCSV(const string& ifilename, int line_number, float &density, int &pop_size, float &mutation_prob) {
     ifstream file(ifilename);
@@ -233,7 +247,7 @@ vector<vector<bool>> Mutation(vector<vector<bool>> Generation) { // DONE -> AZAM
 
 vector<bool> GeneticAlgo(const vector<int>& Task, const int& PSize, const int& NumIterations) {
 
-	cout << "In GeneticAlgo" << endl;
+	cout << "\nIn GeneticAlgo" << endl;
 	int dim = Task.size() - 1;
 	int TWeight = Task.back();
 	vector<int> Weights(Task.begin(), Task.end()-1);
@@ -271,6 +285,9 @@ vector<bool> GeneticAlgo(const vector<int>& Task, const int& PSize, const int& N
 }
 
 vector<int> DynamicAlgo(vector<int> Task) { // DONE -> AZAMAT
+
+	cout << "\nIn Dynamic Algo" << endl;
+
 	vector<int> profits; // стоимости предметов
 	vector<int> weights; // веса предметов
 	vector<int> final_set; // результирующий набор предметов
