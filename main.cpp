@@ -139,32 +139,47 @@ int FitnessFunctionMod(vector<bool> Chromo, vector<int> Weights, int TWeight) {
 vector<vector<bool>> Selection(const vector<vector<bool>>& Generation, const vector<int>& Weights, const int& TWeight)
 {
 	cout << "In Selection" << endl;
-	// вычисляем сумму фитнесс-функций всех особей
-	long long sum_fitness_func(0);
-	for (int i(0); i < Generation.size(); ++i)
-	{
-		int p = FitnessFunctionMod(Generation[i], Weights, TWeight);
-		cout << "a" << i << " = " << p << "\n";
-		sum_fitness_func += p;
-	}
 
-	cout << "sum_fitness_func = " << sum_fitness_func << "\n";
+	srand(clock());
 
-	// вычисляем количество особей i-хромосомы в промежуточной популяции
-	vector<int> probabilities_individuals;
-	for (int i(0); i < Generation.size(); ++i)
-	{
-		double fit_func_item = FitnessFunctionMod(Generation[i], Weights, TWeight);
-		double hit_probability = fit_func_item / sum_fitness_func * Generation.size();
-		int int_hit_probabilit = round(hit_probability);
-		probabilities_individuals.push_back(int_hit_probabilit);
-	}
-
-	// формируем промежуточную популяцию
 	vector<vector<bool>> intermediate_population;
-	for (int i(0); i < probabilities_individuals.size(); ++i)
-		for (int j(0); j < probabilities_individuals[i]; ++j)
-			intermediate_population.push_back(Generation[i]);
+
+	while (intermediate_population.size() != Generation.size())
+	{
+		// количество особей для выбора
+		int bidder_counter = 2;
+		vector<pair<vector<bool>, int>> bidder_vector;
+
+		int number_bidder = -1;
+
+		for (int i(0); i < bidder_counter; ++i)
+		{
+			// попытка более-менее разнообразить претендентов на родителей
+			while (true)
+			{
+				int new_number = rand() % (Generation.size());
+				if (new_number != number_bidder)
+				{
+					number_bidder = new_number;
+					break;
+				}
+			}
+			cout << "number[" << i << "] = " << number_bidder << "\n";
+
+			int value_fitness_func = FitnessFunction(Generation[number_bidder], Weights, TWeight);
+			bidder_vector.push_back(make_pair(Generation[number_bidder], value_fitness_func));
+		}
+
+		pair<vector<bool>, int> best_bidder = bidder_vector[0];
+
+		for (int i(1); i < bidder_vector.size(); ++i)
+			if (best_bidder.second < bidder_vector[i].second)
+				best_bidder = bidder_vector[i];
+
+		cout << "Best biddet " << best_bidder.second << "\n";
+
+		intermediate_population.push_back(best_bidder.first);
+	}
 
 	return intermediate_population;
 }
@@ -190,18 +205,12 @@ vector<vector<bool>> Crossingover(vector<vector<bool>>& Generation)
 
 			cout << "first_parent " << first_parent << "second_parent " << second_parent << endl;
 
-			bool individuals_equal = true;
-			if (Generation[first_parent].size() != 0 && Generation[second_parent].size() != 0)
-				for (int i(0); i < Generation[first_parent].size(); ++i)
-					if (Generation[first_parent][i] == Generation[second_parent][i])
-						individuals_equal &= true;
-					else
-						individuals_equal &= false;
+			if (Generation[first_parent].size() != 0 &&
+				Generation[second_parent].size() != 0 &&
+				first_parent != second_parent)
+				break;
 			else
 				continue;
-
-			if (!individuals_equal)
-				break;
 		}
 
 		int point_crossingover = rand() % (Generation[first_parent].size() - 1);
