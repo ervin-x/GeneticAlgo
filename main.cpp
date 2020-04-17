@@ -86,7 +86,7 @@ vector<int> TaskGeneration(int dim, float density) {
 
 
 vector<vector<bool>> PoulationGeneration(int PSize, int dim) {
-	  cout << "In PoulationGeneration" << endl;
+	  cout << "\n\nIn PoulationGeneration" << endl;
     
     srand(clock());
 	map <int, bool> int_to_bool = {{1, true}, {0, false}};
@@ -138,7 +138,7 @@ int FitnessFunctionMod(vector<bool> Chromo, vector<int> Weights, int TWeight) {
 
 vector<vector<bool>> Selection(const vector<vector<bool>>& Generation, const vector<int>& Weights, const int& TWeight)
 {
-	cout << "In Selection" << endl;
+	cout << "\n\nIn Selection" << endl;
 
 	srand(clock());
 
@@ -164,7 +164,7 @@ vector<vector<bool>> Selection(const vector<vector<bool>>& Generation, const vec
 					break;
 				}
 			}
-			cout << "number[" << i << "] = " << number_bidder << "\n";
+			//cout << "number[" << i << "] = " << number_bidder << "\n";
 
 			int value_fitness_func = FitnessFunction(Generation[number_bidder], Weights, TWeight);
 			bidder_vector.push_back(make_pair(Generation[number_bidder], value_fitness_func));
@@ -176,7 +176,7 @@ vector<vector<bool>> Selection(const vector<vector<bool>>& Generation, const vec
 			if (best_bidder.second < bidder_vector[i].second)
 				best_bidder = bidder_vector[i];
 
-		cout << "Best biddet " << best_bidder.second << "\n";
+		//cout << "Best biddet " << best_bidder.second << "\n";
 
 		intermediate_population.push_back(best_bidder.first);
 	}
@@ -186,14 +186,14 @@ vector<vector<bool>> Selection(const vector<vector<bool>>& Generation, const vec
 
 vector<vector<bool>> Crossingover(vector<vector<bool>>& Generation)
 {
-	cout << "In Crossingover" << endl;
+	cout << "\n\nIn Crossingover" << endl;
 	srand(clock());
 
 	vector<vector<bool>> new_population;
 
 	while (new_population.size() != Generation.size())
 	{
-		cout << "In Crossingover 1" << endl;
+		//cout << "In Crossingover 1" << endl;
 
 		int first_parent = -1;
 		int second_parent = -1;
@@ -203,7 +203,7 @@ vector<vector<bool>> Crossingover(vector<vector<bool>>& Generation)
 			first_parent = rand() % (Generation.size());
 			second_parent = rand() % (Generation.size());
 
-			cout << "first_parent " << first_parent << "second_parent " << second_parent << endl;
+			//cout << "first_parent " << first_parent << "second_parent " << second_parent << endl;
 
 			if (Generation[first_parent].size() != 0 &&
 				Generation[second_parent].size() != 0 &&
@@ -236,7 +236,7 @@ vector<vector<bool>> Crossingover(vector<vector<bool>>& Generation)
 
 
 vector<vector<bool>> Mutation(vector<vector<bool>> Generation) { // DONE -> AZAMAT
-	cout << "In Mutation" << endl;
+	cout << "\n\nIn Mutation" << endl;
 	// настраиваем ГПСЧ
 	long long time = duration_cast<microseconds>(system_clock::now().time_since_epoch()).count();
     	boost::random::mt19937 mt(time);
@@ -266,16 +266,23 @@ vector<bool> GeneticAlgo(const vector<int>& Task, const int& PSize, const int& N
 
 	for (int i = 0; i < NumIterations; ++i) {
 
-		population = Selection(population, Weights, TWeight);
-		population = Crossingover(population);
-		population = Mutation(population);
+		cout << "\ni = " << i;
+
+		vector<vector<bool>> sel_population = Selection(population, Weights, TWeight);
+		// PrintGeneration(sel_population);
+
+		vector<vector<bool>> cross_population = Crossingover(sel_population);
+
+		cout << "\nBefore Mutation";
+		PrintGeneration(cross_population);
+		vector<vector<bool>> mut_population = Mutation(cross_population);
 
 		int fit_value = TWeight;
 		int repeat_num = 0;
 		vector<bool> best_chromo;
 
 		// выбор лучшей хромосомы по фитнес функции
-		for (auto chromo : population) {
+		for (auto chromo : mut_population) {
 			int _fit_value = FitnessFunctionMod(chromo, Weights, TWeight);
 			if (_fit_value > fit_value) {
 				fit_value = _fit_value;
@@ -392,9 +399,9 @@ int main()
 			vector<bool> bestGAChromo = GeneticAlgo(Task, pop_size, NumIterations);
 			gen_time += (long long)(clock() - start_time) / CLOCKS_PER_SEC;
 
-			start_time = clock();
-			vector<int> bestDynChromo = DynamicAlgo(Task);
-			dynamic_time += (long long)(start_time - start_time) / CLOCKS_PER_SEC;
+			//start_time = clock();
+			//vector<int> bestDynChromo = DynamicAlgo(Task);
+			//dynamic_time += (long long)(start_time - start_time) / CLOCKS_PER_SEC;
 
 		}
 
