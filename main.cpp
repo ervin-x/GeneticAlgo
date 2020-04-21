@@ -69,7 +69,10 @@ void WriteCSV(const string& ofilename, float density, int dim, long long gen_tim
 vector<int> TaskGeneration(int dim, float density) {
 	cout << "In TaskGeneration" << endl;
     int max_weight = int(pow(2, dim / density));
-    //cout << "Maxweight = " << max_weight << endl;
+	if (max_weight < 0) {
+		max_weight = 2147483647;
+	}
+    cout << "Maxweight = " << max_weight << endl;
     int sum = 0;
     long long time = duration_cast<microseconds>(system_clock::now().time_since_epoch()).count();
     boost::random::mt19937 mt(time);
@@ -86,7 +89,7 @@ vector<int> TaskGeneration(int dim, float density) {
 
 
 vector<vector<bool>> PoulationGeneration(int PSize, int dim) {
-	  cout << "\n\nIn PoulationGeneration" << endl;
+	// cout << "\n\nIn PopulationGeneration" << endl;
     
     srand(clock());
 	map <int, bool> int_to_bool = {{1, true}, {0, false}};
@@ -131,14 +134,14 @@ int FitnessFunctionMod(vector<bool> Chromo, vector<int> Weights, int TWeight) {
 	if (sum > TWeight) {
 		return 0;
 	} else {
-		return glob_sum - abs (sum - TWeight);
+		return TWeight - abs (sum - TWeight);
 	}
 }
 
 
 vector<vector<bool>> Selection(const vector<vector<bool>>& Generation, const vector<int>& Weights, const int& TWeight)
 {
-	cout << "\n\nIn Selection" << endl;
+	// cout << "\n\nIn Selection" << endl;
 
 	srand(clock());
 
@@ -186,7 +189,7 @@ vector<vector<bool>> Selection(const vector<vector<bool>>& Generation, const vec
 
 vector<vector<bool>> Crossingover(vector<vector<bool>>& Generation)
 {
-	cout << "\n\nIn Crossingover" << endl;
+	// cout << "\n\nIn Crossingover" << endl;
 	srand(clock());
 
 	vector<vector<bool>> new_population;
@@ -236,8 +239,9 @@ vector<vector<bool>> Crossingover(vector<vector<bool>>& Generation)
 
 
 vector<vector<bool>> Mutation(vector<vector<bool>> Generation) { // DONE -> AZAMAT
-	cout << "\n\nIn Mutation" << endl;
+	// cout << "\n\nIn Mutation" << endl;
 	// настраиваем ГПСЧ
+	
 	long long time = duration_cast<microseconds>(system_clock::now().time_since_epoch()).count();
     	boost::random::mt19937 mt(time);
     	boost::random::uniform_real_distribution<double> ui(0, 1);
@@ -249,122 +253,78 @@ vector<vector<bool>> Mutation(vector<vector<bool>> Generation) { // DONE -> AZAM
 	        if (MutationChance > ui(mt))
 			Generation[i][genToChange] = !Generation[i][genToChange];
 	}
-		
+	
+	// vector<vector<bool>> gen = PoulationGeneration(int PSize, int dim)
+	
 	return Generation;
 }
 
+vector<bool> best_chromo(const vector<vector<bool>>& Generation, const vector<int>& Weights, const int& TWeight) {
+	int fit_value = TWeight;
+	int repeat_num = 0;
+	vector<bool> best_chromo;
+
+	for (vector<bool> chromo : Generation) {
+		int _fit_value = FitnessFunctionMod(chromo, Weights, TWeight);
+		if (_fit_value > fit_value) {
+			fit_value = _fit_value;
+			best_chromo = chromo;
+		} else if (_fit_value == fit_value) {
+			if (repeat_num >= ExitThreshold) {
+				break;
+			} else {
+				++repeat_num;
+			}
+		}
+	}
+
+	return best_chromo;
+}
 
 vector<bool> GeneticAlgo(const vector<int>& Task, const int& PSize, const int& NumIterations) {
 
-	cout << "\nIn GeneticAlgo" << endl;
+	//cout << "\nIn GeneticAlgo" << endl;
 	int dim = Task.size() - 1;
 	int TWeight = Task.back();
 	vector<int> Weights(Task.begin(), Task.end()-1);
     vector<vector<bool>> population = PoulationGeneration(PSize, dim);
+	int prev_decision = 0;
+	int repeat_n = 0;
 
-	//cout << "population.size() = " << population.size() << endl;
+	//PrintGeneration(population);
 
-	for (int i = 0; i < NumIterations; ++i) {
+	for (int i = 0; i < 100; ++i) {
 
-		cout << "\ni = " << i;
+		// cout << "i = " << i << endl;
 
-		vector<vector<bool>> sel_population = Selection(population, Weights, TWeight);
-		// PrintGeneration(sel_population);
+		//PrintGeneration(population);
+		population = Selection(population, Weights, TWeight);
+		
+		//PrintGeneration(population);
+		population = Crossingover(population);
 
-		vector<vector<bool>> cross_population = Crossingover(sel_population);
+		//PrintGeneration(population);
+		population = Mutation(population);
 
-		cout << "\nBefore Mutation";
-		PrintGeneration(cross_population);
-		vector<vector<bool>> mut_population = Mutation(cross_population);
-
-		int fit_value = TWeight;
-		int repeat_num = 0;
-		vector<bool> best_chromo;
-
-		// выбор лучшей хромосомы по фитнес функции
-		for (auto chromo : mut_population) {
-			int _fit_value = FitnessFunctionMod(chromo, Weights, TWeight);
-			if (_fit_value > fit_value) {
-				fit_value = _fit_value;
-				best_chromo = chromo;
-			} else if (_fit_value == fit_value) {
-				if (repeat_num >= ExitThreshold) {
-
-				return best_chromo;
-
-				} else {
-					++repeat_num;
-				}
-			} 
-		}
-	}
-}
-
-vector<int> DynamicAlgo(vector<int> Task) { // DONE -> AZAMAT
-	vector<int> profits; // стоимости предметов
-	vector<int> weights; // веса предметов
-	vector<int> final_set; // результирующий набор предметов
-	int target_weight; // целевой вес
-	int subjects = Task.size() - 1; // количество предметов
-
-	// предмет с нулевым весом и стоимостью
-	// необходим для общности решения
-	profits.push_back(0);
-	weights.push_back(0);
-
-	for(int i = 0; i < Task.size(); i++) {
-		if (i < Task.size() - 1) {
-			// векторы введены дополнительно для облегчения решения задачи
-			profits.push_back(Task.at(i)); // стоимости равны весам
-			weights.push_back(Task.at(i)); // сохраняем веса
-			final_set.push_back(0); // изначально ни один предмет не выбран
-		}
-		else target_weight = Task.at(i); // сохраняется целевой вес
-	}
-
-	// в этой матрице будут храниться решения подзадач данной задачи
-	// +1 в размерностях, так как начинаем с 0 как для количества предметов,
-	// так и для целевого веса
-	int** table = new int*[subjects + 1];
-	for(int i = 0; i < subjects + 1; i++)
-		table[i] = new int[target_weight + 1];
-
-	// построение таблицы
-	for(int i = 0; i <= subjects; i++) { // для каждого предмета
-		for(int w = 0; w <= target_weight; w++) { // для каждого целевого веса
-			// количество предметов и целевой вес = 0
-			if (i == 0 || w == 0)
-				table[i][w] = 0; // решение задачи очевидно
-			else if(weights[i] <= w){ // вес предмета меньше или равен рассматриваемому целевому весу
-				table[i][w] = max(
-					profits[i] + table[i - 1][w - weights[i]],
-					table[i - 1][w]
-				);
-			} else table[i][w] = table[i - 1][w]; // вес предмета больше рассматриваемого целевого веса
-		}
-	}
-
-	// восстановление отобранных предметов
-	int i = subjects;
-	int j = target_weight;
-	while (i > 0 && j > 0) {
-		if(table[i][j] == table[i - 1][j]){
-			// данный предмет не выбран, так как он есть в предыдущей строке
-			final_set[i - 1] = 0;
+		
+		if ((FitnessFunction(best_chromo(population, Weights, TWeight), Weights, TWeight) - prev_decision) / TWeight < 0.05 ) {
+			++repeat_n;
+			if (repeat_n >= 10) {
+				break;
+			}
 		} else {
-			// предмет выбран, так как его нет в предыдущей строке
-			final_set[i - 1] = 1;
-			j = j - weights[i]; // уменьшаем целевой вес для продолжения поиска
+			repeat_n = 0;
 		}
-		i--; // переходим к предыдущей строке
+		
+		
 	}
 
-	// очистка памяти
-	for(int i = 0; i < subjects + 1; i++)
-		delete table[i];
-	delete[] table;
+	// PrintGeneration(population);
 
-	return final_set;
+	cout << "Fitnes Funk of best result: "
+		 << (float)FitnessFunction(best_chromo(population, Weights, TWeight), Weights, TWeight) / TWeight << endl;
+
+	return best_chromo(population, Weights, TWeight);
 }
 
 int main()
@@ -376,47 +336,30 @@ int main()
 	int pop_size;
 	float mutation_prob;
 
-	for (int l = 0; l < num_file_lines; ++l) {
+	ReadCSV(ifilename, 0, density, pop_size, mutation_prob);
+	cout << "input parameters:"
+		<< " line_number: " << 0
+		<< " density: " << density
+		<< " pop_size: " << pop_size
+		<< " mutation_prob: " << mutation_prob
+		<< endl;
 
-		ReadCSV(ifilename, l, density, pop_size, mutation_prob);
-		cout << "input parameters:"
-			<< " line_number: " << l
-			<< " density: " << density
-			<< " pop_size: " << pop_size
-			<< " mutation_prob: " << mutation_prob
-			<< endl;
+	vector<int> Task = TaskGeneration(pop_size, density);
+	long long gen_time = 0;
 
-		long long gen_time = 0;
-		long long dynamic_time = 0;
+	for (int k = 0; k < 100; ++k) {
 
-		for (int k = 1; k <= 100; k++)
-		{
-			cout << "k = " << k << endl;
-
-			vector<int> Task = TaskGeneration(pop_size, density);
-
-			clock_t start_time = clock();
-			vector<bool> bestGAChromo = GeneticAlgo(Task, pop_size, NumIterations);
-			gen_time += (long long)(clock() - start_time) / CLOCKS_PER_SEC;
-
-			//start_time = clock();
-			//vector<int> bestDynChromo = DynamicAlgo(Task);
-			//dynamic_time += (long long)(start_time - start_time) / CLOCKS_PER_SEC;
-
-		}
-
-		gen_time /= 100;
-		dynamic_time /= 100;
-
-		WriteCSV(ofilename, density, pop_size, gen_time, dynamic_time);
-		cout << "output parameters:"
-			<< " density: " << density
-			<< " pop_size: " << pop_size
-			<< " gen_time: " << gen_time
-			<< " dynamic_time: " << dynamic_time
-			<< endl;
+		cout << "k = " << k << endl;
+		
+		clock_t start_time = clock();
+		vector<bool> bestGAChromo = GeneticAlgo(Task, pop_size, NumIterations);
+		gen_time += (long long)(clock() - start_time) / (CLOCKS_PER_SEC / 1000);
+		cout << "time: " << (clock() - start_time) / (CLOCKS_PER_SEC / 1000) << endl;
 
 	}
+
+	gen_time /= 100;
+	cout << "time: "<< gen_time << endl;
 
     return 0;
 }
