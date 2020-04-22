@@ -17,11 +17,11 @@ using namespace chrono;
 const string ifilename = "in.csv";
 const string ofilename = "out.csv";
 
-const int PopSize = 10;
-const int ChromoDim = 10;
+const int PopSize = 10; // in file
+const int ChromoDim = 100;
 const int NumIterations = 100;
 const int ExitThreshold = 10;
-const float MutationChance = 0.001; // вероятность мутации
+const float MutationChance = 0.001; // in file
 
 void PrintChromo(const vector<bool>& Chromo) {
 	cout << "\nchromo ";
@@ -293,12 +293,14 @@ vector<bool> GeneticAlgo(const vector<int>& Task, const int& PSize, const int& N
 	for (int i = 0; i < NumIterations; ++i) {
 
 		population = Selection(population, Weights, TWeight);
-		population = Crossingover(population);
-		population = Mutation(population);
 		
+		population = Crossingover(population);
+		//PrintGeneration(population);
+		population = Mutation(population);
+
 		if ((FitnessFunctionMod(best_chromo(population, Weights, TWeight), Weights, TWeight) - prev_decision) / TWeight < 0.05 ) {
 			++repeat_n;
-			if (repeat_n >= 10) {
+			if (repeat_n >= ExitThreshold) {
 				break;
 			}
 		} else {
@@ -380,59 +382,65 @@ vector<int> DynamicAlgo(vector<int> Task) { // DONE -> AZAMAT
 
 int main()
 {
-	int num_file_lines = 4;
+	int num_file_lines = 50;
 
-	// int line_number = 0;
-	float density;
-	int pop_size;
-	float mutation_prob;
+	for (int l = 0; l < num_file_lines; ++l) {
+		// int line_number = 0;
+		float density;
+		int pop_size;
+		float mutation_prob;
 
-	ReadCSV(ifilename, 0, density, pop_size, mutation_prob);
-	cout << "input parameters:"
-		<< " line_number: " << 0
-		<< " density: " << density
-		<< " pop_size: " << pop_size
-		<< " mutation_prob: " << mutation_prob
-		<< endl;
+		//int l = 0;
 
-	vector<int> Task = TaskGeneration(pop_size, density);
-	int TWeight = Task.back();
-	vector<int> Weights(Task.begin(), Task.end()-1);
-	
-	long long gen_time = 0;
-	long long dynamic_time = 0;
+		ReadCSV(ifilename, l, density, pop_size, mutation_prob);
+		cout << "input parameters:"
+			<< " line_number: " << l
+			<< " density: " << density
+			<< " pop_size: " << pop_size
+			<< " mutation_prob: " << mutation_prob
+			<< endl;
 
-	for (int k = 0; k < 100; ++k) {
-
-		cout << "\nk = " << k << endl;
+		vector<int> Task = TaskGeneration(ChromoDim, density);
+		int TWeight = Task.back();
+		vector<int> Weights(Task.begin(), Task.end()-1);
 		
-		clock_t start_time = clock();
-		vector<bool> bestGAchromo = GeneticAlgo(Task, pop_size, 100);
-		gen_time += (long long)(clock() - start_time) / (CLOCKS_PER_SEC / 1000);
-		cout << "time GA: " << (clock() - start_time) / (CLOCKS_PER_SEC / 1000) << endl;
+		long long gen_time = 0;
+		long long dynamic_time = 0;
 
-		//start_time = clock();
-		//vector<int> bestDynchromo = DynamicAlgo(Task);
-		//dynamic_time += (long long)(clock() - start_time) / (CLOCKS_PER_SEC / 1000);
-		//cout << "time Dyn: " << (clock() - start_time) / (CLOCKS_PER_SEC / 1000) << endl;
+		for (int k = 0; k < 100; ++k) {
 
+			//cout << "\nk = " << k << endl;
+			
+			clock_t start_time = clock();
+			vector<bool> bestGAchromo = GeneticAlgo(Task, pop_size, NumIterations);
+			//PrintChromo(bestGAchromo);
+
+			gen_time += (long long)(clock() - start_time) / (CLOCKS_PER_SEC / 1000);
+			//cout << "time GA: " << (clock() - start_time) / (CLOCKS_PER_SEC / 1000) << endl;
+
+			//start_time = clock();
+			//vector<int> bestDynchromo = DynamicAlgo(Task);
+			//dynamic_time += (long long)(clock() - start_time) / (CLOCKS_PER_SEC / 1000);
+			//cout << "time Dyn: " << (clock() - start_time) / (CLOCKS_PER_SEC / 1000) << endl;
+
+		}
+
+		gen_time /= 100;
+		dynamic_time /= 100;
+
+		cout << "mean time GA: "<< gen_time << endl << endl;
+		//cout << "mean time Dyn: "<< dynamic_time << endl;
+
+		/*
+		WriteCSV(ofilename, density, pop_size, gen_time, dynamic_time);
+		cout << "output parameters:"
+			<< " density: " << density
+			<< " pop_size: " << pop_size
+			<< " gen_time: " << gen_time
+			<< " dynamic_time: " << dynamic_time
+			<< endl;
+		*/
 	}
-
-	gen_time /= 100;
-	dynamic_time /= 100;
-
-	cout << "mean time GA: "<< gen_time << endl;
-	cout << "mean time Dyn: "<< dynamic_time << endl;
-
-	/*
-	WriteCSV(ofilename, density, pop_size, gen_time, dynamic_time);
-	cout << "output parameters:"
-		<< " density: " << density
-		<< " pop_size: " << pop_size
-		<< " gen_time: " << gen_time
-		<< " dynamic_time: " << dynamic_time
-		<< endl;
-	*/
 
     return 0;
 }
